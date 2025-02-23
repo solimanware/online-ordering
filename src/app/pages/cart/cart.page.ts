@@ -1,0 +1,88 @@
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import {
+  IonBackButton,
+  IonButtons,
+  IonContent,
+  IonFooter,
+  IonHeader,
+  IonToolbar,
+} from '@ionic/angular/standalone';
+import { CodeInputModule } from 'angular-code-input';
+import { CartService } from 'src/app/services/cart.service';
+import { ItemDetail } from '../item-detail/item-detail.page';
+
+export interface CartDisplayedItem extends ItemDetail {
+  quantity: number;
+  totalPrice: number;
+}
+
+export interface CartSummary {
+  subtotal: number;
+  serviceFee: number;
+  total: number;
+  currency: string;
+}
+
+@Component({
+  selector: 'app-cart-detail',
+  templateUrl: './cart.page.html',
+  styleUrls: ['./cart.page.scss'],
+  standalone: true,
+  imports: [
+    IonButtons,
+    IonBackButton,
+    IonContent,
+    IonHeader,
+    IonToolbar,
+    CommonModule,
+    FormsModule,
+    IonFooter,
+    CodeInputModule,
+  ],
+})
+export class CartPage {
+  cartSummary$ = this.cartService.cartSummary$;
+  paymentSummary$ = this.cartService.paymentSummary$;
+  action: 'cta' | 'phone-verification' | 'otp' | 'name' = 'cta';
+  phoneNumber: string = '';
+  name: string = '';
+  constructor(private cartService: CartService, private router: Router) {
+    this.cartService.cartSummary$.subscribe((cartSummary) => {
+      console.log(cartSummary);
+    });
+  }
+  decreaseQuantity(item: ItemDetail) {
+    this.cartService.decreaseQuantity(item);
+  }
+  increaseQuantity(item: ItemDetail) {
+    this.cartService.increaseQuantity(item);
+  }
+  async presentPhoneVerification() {
+    this.action = 'phone-verification';
+  }
+
+  async sendWhatsAppOTP(phoneNumber: string) {
+    // Implement your WhatsApp OTP sending logic here
+    console.log('Sending OTP to:', phoneNumber);
+    this.action = 'otp';
+  }
+  // this called every time when user changed the code
+  onCodeChanged(code: string) {}
+
+  // this called only if user entered full code
+  onCodeCompleted(code: string) {}
+
+  async verifyOTP(otp: string) {
+    // Implement your OTP verification logic here
+    console.log('Verifying OTP:', otp);
+    this.action = 'name';
+  }
+  continue() {
+    console.log('continue');
+
+    this.router.navigate(['/new-address']);
+  }
+}

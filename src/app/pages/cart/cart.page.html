@@ -1,0 +1,186 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button color="dark" defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <h1 class="font-bold text-2xl ml-5">Your Order</h1>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="items p-4 mt-8">
+    @for (cartDisplayedItem of (cartSummary$ | async); track $index) {
+    <div
+      class="item bg-white rounded-2xl shadow-md p-4 flex items-center justify-between mb-4"
+    >
+      <div class="flex flex-col gap-1">
+        <h2 class="text-lg font-semibold text-gray-900">
+          {{cartDisplayedItem?.item?.name?.en}}
+        </h2>
+        <p class="text-sm text-gray-600">
+          {{cartDisplayedItem?.item?.description?.en}}
+        </p>
+
+        <p class="text-lg font-bold text-red-600 mt-1">
+          +{{cartDisplayedItem?.totalPrice}}
+          {{cartDisplayedItem?.item?.price?.currency}}
+        </p>
+      </div>
+      <div class="relative w-24 h-24 rounded-xl overflow-hidden">
+        <img
+          src="{{cartDisplayedItem?.item?.imageUrl}}"
+          alt="Pizza Chicken"
+          class="w-full h-full object-cover"
+        />
+        <div
+          class="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/90 rounded-full px-2 py-1"
+        >
+          <button
+            (click)="decreaseQuantity(cartDisplayedItem?.item)"
+            class="w-6 h-6 rounded-full flex items-center justify-center text-black text-sm font-medium"
+          >
+            -
+          </button>
+          <span class="text-sm font-medium w-4 text-center"
+            >{{ cartDisplayedItem?.quantity }}</span
+          >
+          <button
+            (click)="increaseQuantity(cartDisplayedItem?.item)"
+            class="w-6 h-6 rounded-full flex items-center justify-center text-red-600 text-sm font-medium"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+    <div class="special-instructions bg-white rounded-2xl shadow-md p-4 mb-4">
+      <h2 class="text-lg font-semibold text-gray-900 mb-2">
+        Special Instructions
+      </h2>
+      <textarea
+        rows="3"
+        placeholder="Add any special instructions for your order..."
+        class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+      ></textarea>
+    </div>
+  </div>
+  <div class="payment-summary p-4">
+    <h2 class="text-lg font-semibold text-gray-900">Payment Summary</h2>
+    <div class="subtotal flex">
+      <p class="text-lg text-gray-900">Subtotal</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.subtotal}}
+        {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+    <div class="service-fee flex">
+      <p class="text-lg text-gray-900">Service Fee</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.serviceFee}}
+        {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+    <div class="total-amount flex font-semibold">
+      <p class="text-lg text-gray-900">Total amount</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.total}} {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+  </div>
+</ion-content>
+<ion-footer>
+  @switch (action) { @case ('phone-verification') {
+  <div
+    class="phone-verification flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <h1 class="text-lg font-semibold text-gray-900">
+      Phone Verification via WhatsApp OTP
+    </h1>
+    <p>Enter your phone number to receive a verification code via WhatsApp.</p>
+    <div class="mt-4">
+      <div class="relative">
+        <input
+          type="tel"
+          placeholder="EX:01029889661"
+          class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          [(ngModel)]="phoneNumber"
+        />
+      </div>
+      <button
+        class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+        (click)="sendWhatsAppOTP(phoneNumber)"
+      >
+        Send OTP
+      </button>
+    </div>
+  </div>
+  }@case ('otp') {
+  <div
+    class="otp flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <h1 class="text-lg font-semibold text-gray-900">
+      Enter OTP Sent to {{ phoneNumber }}
+    </h1>
+    <p>
+      We’ve sent a 4-digit code to your WhatsApp. Enter it below to verify your
+      number.
+    </p>
+    <code-input
+      class="mt-4"
+      [isCodeHidden]="true"
+      [codeLength]="4"
+      (codeChanged)="onCodeChanged($event)"
+      (codeCompleted)="onCodeCompleted($event)"
+    >
+    </code-input>
+    <button
+      class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+      (click)="verifyOTP(phoneNumber)"
+    >
+      Verify & Continue
+    </button>
+  </div>
+  }@case ('name') {
+  <div
+    class="name flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <h1 class="text-lg font-semibold text-gray-900">
+      Please enter your name to continue
+    </h1>
+    <p>You can edit this from your profile section any time</p>
+    <input
+      type="text"
+      placeholder="Enter your name"
+      class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+      [(ngModel)]="name"
+    />
+    <button
+      class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+      (click)="continue()"
+    >
+      Continue
+    </button>
+  </div>
+  }@default {
+  <div
+    class="cta flex justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <button
+      expand="block"
+      class="p-3 bg-red-200 text-red-900 font-semibold text-base mx-4 px-10 rounded-full shadow-lg hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-2"
+    >
+      Add Item
+    </button>
+    <button
+      (click)="presentPhoneVerification()"
+      expand="block"
+      class="p-3 bg-red-600 text-white font-semibold text-base mx-4 px-10 rounded-full shadow-lg hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-2"
+    >
+      Checkout
+    </button>
+  </div>
+  } }
+</ion-footer>

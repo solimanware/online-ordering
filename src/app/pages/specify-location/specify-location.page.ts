@@ -1,0 +1,116 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import {
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonSegment,
+  IonSegmentButton,
+} from '@ionic/angular/standalone';
+import { MapComponent } from '@maplibre/ngx-maplibre-gl';
+import { addIcons } from 'ionicons';
+import {
+  arrowBackOutline,
+  location,
+  locationOutline,
+  searchOutline,
+} from 'ionicons/icons';
+import { Map } from 'maplibre-gl';
+import { Observable, Subscriber } from 'rxjs';
+import { HomePageService } from 'src/app/services/home-page.service';
+
+const awsRegion = 'eu-west-1';
+const mapStyle = 'Standard';
+const apiKey =
+  'v1.public.eyJqdGkiOiJlNzhmNzczMS1iN2JiLTQzNmYtYTI0ZS0xZDIzODI2ZWUwZjkifRpvdITR-1CVNbYwlc1aaEitntKMMpQXaX3rg1myP0ZwV94dLRkniQNpQYzw19kOKqztasNhSFCcReeI3GEANGlvcX2J0XmzSSPonvB-3QOMhdaww7t_TxrUDfqUEI72uayQcno3EpZLkNDlM2xdzD265YU3DbbbcKn6lqE2SS_ho4O4NUKu1TjqDfEeB5APJT2GJ0tzh53m_rxS_KoHIZrlD5hbXb6Ma7pCUENZspPDE7fXisPDTPYY9zlqhBvDhIVN8Lot2WXhLRX87r9-5thfKlWIDs6ZkzHX71uLHGc1PF_GmMl2-QLbk0ZUnF4voWuBuZaSRgypwrFfgqRWySM.ZGQzZDY2OGQtMWQxMy00ZTEwLWIyZGUtOGVjYzUzMjU3OGE4';
+export const style = `https://maps.geo.${awsRegion}.amazonaws.com/v2/styles/${mapStyle}/descriptor?key=${apiKey}`;
+@Component({
+  selector: 'app-specify-location',
+  templateUrl: './specify-location.page.html',
+  styleUrls: ['./specify-location.page.scss'],
+  standalone: true,
+  imports: [
+    MapComponent,
+    IonHeader,
+    IonIcon,
+    IonSegment,
+    IonSegmentButton,
+    FormsModule,
+    IonContent,
+    RouterLink,
+  ],
+})
+export class SpecifyLocationPage {
+  selectedSegment = 'delivery';
+  mapStyle: string = style;
+  zoomLevel: [number] = [5];
+  mapCenter: [number, number] = [30.0444, 31.2357];
+  map: Map;
+  returnTo: string = 'home';
+
+  constructor(
+    private homePageService: HomePageService,
+    private router: Router
+  ) {
+    addIcons({ arrowBackOutline, searchOutline, locationOutline, location });
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        const params = new URLSearchParams(event.url.split('?')[1]);
+        if (params.get('returnTo') === 'home') {
+          this.returnTo = 'home';
+        } else if (params.get('returnTo') === 'item-detail') {
+          this.returnTo = 'item-detail';
+        }
+      }
+    });
+  }
+
+  locationChoosen() {
+    if (this.returnTo === 'home') {
+      this.router.navigate(['/home']);
+    } else if (this.returnTo === 'item-detail') {
+      this.router.navigate(['/item-detail']);
+    }
+  }
+
+  onMapLoaded(event: Map) {
+    this.map = event;
+    //TODO: Request user location permossion.
+    this.centerMap();
+  }
+
+  onMapMoveEnd(event: any) {
+    const center = this.map.getCenter();
+    this.homePageService.userLocation$.next([center.lat, center.lng]);
+  }
+
+  private getCurrentPosition(): any {
+    return new Observable((observer: Subscriber<any>) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position: any) => {
+          observer.next({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          observer.complete();
+        });
+      } else {
+        observer.error();
+      }
+    });
+  }
+
+  centerMap(): void {
+    this.getCurrentPosition().subscribe((position: any) => {
+      this.map.flyTo({
+        center: [position.longitude, position.latitude],
+        zoom: 15,
+      });
+      this.homePageService.userLocation$.next([
+        position.latitude,
+        position.longitude,
+      ]);
+    });
+  }
+}

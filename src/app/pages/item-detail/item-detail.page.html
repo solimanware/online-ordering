@@ -1,0 +1,125 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        color="dark"
+        [routerLink]="['/home']"
+        routerLinkActive="router-link-active"
+      ></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="mt-4"></div>
+  <div class="item-image h-72 w-72 mx-auto">
+    <img
+      [src]="itemDetail.imageUrl"
+      alt="Pizza"
+      class="w-full h-full object-fit rounded-lg"
+    />
+  </div>
+
+  <div class="item-details p-4">
+    <h1 class="text-2xl font-bold text-gray-800">{{ itemDetail.name.en }}</h1>
+    <p class="text-gray-600 mt-2">{{ itemDetail.description.en }}</p>
+
+    <div class="size-selection mt-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">Choose Size</h2>
+        <button class="bg-red-600 px-4 py-1 rounded-lg text-white text-sm">
+          Required
+        </button>
+      </div>
+      <div class="flex gap-3">
+        <div
+          *ngFor="let variant of itemDetail.variantCategories[0].variants"
+          [class.border-red-600]="itemDetail.selectedVariantId === variant.id"
+          [class.text-black]="itemDetail.selectedVariantId === variant.id"
+          class="relative flex-1 p-3 rounded-xl border border-gray-200 text-center cursor-pointer transition-all"
+          (click)="selectVariant(variant)"
+        >
+          @if (itemDetail.selectedVariantId === variant.id) {
+          <div
+            class="absolute top-2 right-2 w-3 h-3 bg-red-600 rounded-full"
+          ></div>
+          } @else {
+          <div
+            class="absolute top-2 right-2 w-3 h-3 border-gray-800 border rounded-full"
+          ></div>
+          }
+          <p class="font-medium">{{variant.name.en}}</p>
+          <p class="text-sm mt-1">
+            {{variant.price.amount}} {{variant.price.currency}}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="extras mt-6">
+      <h2 class="text-lg font-semibold mb-3">Extras</h2>
+      <div class="grid grid-cols-3 gap-4">
+        <div
+          *ngFor="let modifier of itemDetail.modifierCategories[0].modifiers"
+          class="flex flex-col items-center p-3 rounded-xl border border-gray-200 cursor-pointer relative"
+          [class.border-red-600]="itemDetail.selectedModifierId === modifier.id"
+          (click)="selectModifier(modifier)"
+        >
+          @if (itemDetail.selectedModifierId === modifier.id) {
+          <div
+            class="absolute top-2 right-2 w-3 h-3 bg-red-600 rounded-sm"
+          ></div>
+          } @else {
+          <div
+            class="absolute top-2 right-2 w-3 h-3 border-gray-800 border rounded-sm"
+          ></div>
+          }
+
+          <img
+            src="assets/images/tomato.jpeg"
+            [alt]="modifier.name.en"
+            class="w-16 h-16 object-cover rounded-lg mb-2"
+          />
+          <span class="text-sm font-medium">{{modifier.name.en}}</span>
+          <span class="text-xs text-gray-600 mt-1"
+            >+{{modifier.price.amount}} {{modifier.price.currency}}</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="p-4 bg-white shadow-top">
+    <div class="flex items-center">
+      <div class="flex items-center bg-gray-100 rounded-full">
+        <button
+          class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-red-500"
+          (click)="decrementQuantity()"
+        >
+          <span class="text-xl">-</span>
+        </button>
+        <span class="w-8 text-center font-medium text-black">{{quantity}}</span>
+        <button
+          class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-red-500"
+          (click)="incrementQuantity()"
+        >
+          <span class="text-xl">+</span>
+        </button>
+      </div>
+
+      <div class="grow"></div>
+
+      <div
+        class="rounded-full flex bg-red-600 px-4 text-white p-2 text-lg w-auto text-center"
+        expand="block"
+        (click)="addToCart()"
+      >
+        Add Item
+        <div class="w-10"></div>
+        {{itemDetail.totalPrice}} {{itemDetail.price.currency}}
+      </div>
+    </div>
+  </div>
+</ion-footer>

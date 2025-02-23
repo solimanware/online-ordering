@@ -1,0 +1,83 @@
+<ion-header>
+  <div class="p-4 bg-white">
+    <div class="flex items-center gap-4 mb-4">
+      <div
+        class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-sm"
+        [routerLink]="['/home']"
+      >
+        <ion-icon
+          name="arrow-back-outline"
+          class="text-2xl text-gray-700"
+        ></ion-icon>
+      </div>
+      <div class="text-2xl font-bold text-gray-700">Specify Location</div>
+    </div>
+    <div>
+      <ion-segment
+        [(ngModel)]="selectedSegment"
+        mode="ios"
+        class="segment-container"
+      >
+        <ion-segment-button class="delivery" value="delivery">
+          Delivery
+        </ion-segment-button>
+        <ion-segment-button class="pickup" value="pickup">
+          Pickup
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+  </div>
+</ion-header>
+<mgl-map
+  id="map"
+  [style]="mapStyle"
+  [zoom]="zoomLevel"
+  [center]="mapCenter"
+  (mapLoad)="onMapLoaded($event)"
+  (moveEnd)="onMapMoveEnd($event)"
+  class="h-full w-full"
+>
+</mgl-map>
+
+<!-- Add the centered pin marker -->
+<div class="fixed-center-pin">
+  <ion-icon name="location" class="text-5xl text-red-500"></ion-icon>
+</div>
+
+<ion-content>
+  <div
+    class="fixed bottom-8 left-8 right-8 bg-transparent rounded-t-3xl shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <div class="bg-white p-4 rounded-2xl">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">
+        Delivery Location
+      </h2>
+
+      <div class="flex items-center gap-3 bg-gray-100 rounded-xl p-3 mb-3">
+        <ion-icon
+          name="search-outline"
+          class="text-xl text-gray-500"
+        ></ion-icon>
+        <input
+          type="text"
+          placeholder="Search for your address"
+          class="w-full bg-transparent border-none outline-none text-gray-800 placeholder:text-gray-400"
+        />
+      </div>
+
+      <div
+        class="flex items-center gap-2 text-red-500 mb-4 cursor-pointer mt-4"
+      >
+        <ion-icon name="location-outline" class="text-xl"></ion-icon>
+        <span>Detect my current location</span>
+      </div>
+    </div>
+
+    <button
+      class="mt-4 w-full bg-red-500 text-white py-2 rounded-full font-medium"
+      (click)="locationChoosen()"
+    >
+      Yes deliver here
+    </button>
+  </div>
+</ion-content>

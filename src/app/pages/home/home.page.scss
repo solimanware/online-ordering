@@ -1,0 +1,63 @@
+.seachbar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  ion-searchbar {
+    --box-shadow: none;
+    border: 1px solid #c3c3c5;
+    border-radius: 4px;
+    height: 40px;
+    &::ng-deep {
+      input.searchbar-input.sc-ion-searchbar-md {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 16px !important;
+      }
+      .searchbar-search-icon.sc-ion-searchbar-md {
+        top: 5px;
+        right: 16px !important;
+        left: auto !important;
+      }
+    }
+  }
+}
+
+/* For Webkit-based browsers (Chrome, Safari and Opera) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* For IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+ion-segment-button {
+  --indicator-color: transparent !important;
+  --indicator-color-checked: transparent !important;
+}
+
+.fixed-content {
+  transition: all 0.3s ease;
+
+  &.sticky {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Add padding to prevent content jump when fixed-content becomes sticky
+.fixed-content.sticky + .items {
+  margin-top: 140px; // Adjust this value based on your fixed-content height
+}
+
+ion-segment-button.segment-button-checked {
+  background-color: #d80e0e !important;
+}
+ion-segment-button {
+  background-color: #fde4e4 !important;
+  color: #d80e0e !important;
+}
+
+ion-segment-button.segment-button-checked ion-label {
+  color: #fff !important;
+}

@@ -1,0 +1,7 @@
+{
+  "name": "digital-menu",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

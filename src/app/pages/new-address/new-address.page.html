@@ -1,0 +1,180 @@
+<ion-header>
+  <div class="p-4 bg-white">
+    <div class="flex items-center gap-4 mb-4">
+      <div
+        class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-sm"
+        [routerLink]="['/home']"
+      >
+        <ion-icon
+          name="arrow-back-outline"
+          class="text-2xl text-gray-700"
+        ></ion-icon>
+      </div>
+      <div class="text-2xl font-bold text-gray-700">New Address</div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div
+    class="h-28 border border-black mx-4 flex items-center justify-center relative rounded-sm"
+  >
+    <mgl-map
+      [style]="mapStyle"
+      [zoom]="[15]"
+      [center]="[31.2357, 30.0444]"
+      (mapLoad)="onMapLoaded($event)"
+      class="absolute inset-0 w-full h-full"
+    >
+    </mgl-map>
+    <ion-icon
+      name="location"
+      class="text-5xl text-red-500 absolute pointer-events-none"
+      style="transform: translate(-50%, -50%); top: 50%; left: 50%"
+    ></ion-icon>
+  </div>
+  <div class="p-4 border m-4 border-gray-200 rounded-sm">
+    <div class="flex items-center gap-2">
+      <ion-icon name="location-outline" class="text-gray-600"></ion-icon>
+      <p class="text-gray-600">Area</p>
+    </div>
+    <div class="flex items-center gap-2 text-gray-600">Giza- Elomraneya 14</div>
+  </div>
+  <div class="m-4">
+    <ion-segment
+      [(ngModel)]="selectedSegment"
+      class="address-type-segment"
+      scrollable
+    >
+      <ion-segment-button
+        value="apartment"
+        class="segment-btn"
+        layout="icon-start"
+      >
+        <ion-icon name="library-outline"></ion-icon>
+        <ion-label>Apartment</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="house" class="segment-btn" layout="icon-start">
+        <ion-icon name="home"></ion-icon>
+        <ion-label>House</ion-label>
+      </ion-segment-button>
+      <ion-segment-button
+        value="office"
+        class="segment-btn"
+        layout="icon-start"
+      >
+        <ion-icon name="business-outline"></ion-icon>
+        <ion-label>Office</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <form class="px-4" (ngSubmit)="saveAddress()">
+    <div>
+      <!-- Building name -->
+      <ion-item class="rounded-sm">
+        <ion-input
+          label="Building name"
+          label-placement="floating"
+          fill="outline"
+          placeholder="Enter building name"
+          type="text"
+          [(ngModel)]="addressForm.buildingName"
+          name="buildingName"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <!-- Apt no and Floor -->
+      <div class="grid grid-cols-2 gap-4">
+        <ion-item class="rounded-sm">
+          <ion-input
+            label="Apt.no"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter apartment number"
+            type="text"
+            [(ngModel)]="addressForm.aptNo"
+            name="aptNo"
+            required
+          ></ion-input>
+        </ion-item>
+
+        <ion-item class="rounded-sm">
+          <ion-input
+            label="Floor (optional)"
+            label-placement="floating"
+            fill="outline"
+            placeholder="Enter floor number"
+            type="text"
+            [(ngModel)]="addressForm.floor"
+            name="floor"
+          ></ion-input>
+        </ion-item>
+      </div>
+
+      <!-- Name -->
+      <ion-item class="rounded-sm">
+        <ion-input
+          label="Name"
+          label-placement="floating"
+          fill="outline"
+          placeholder="Enter your name"
+          type="text"
+          [(ngModel)]="addressForm.name"
+          name="name"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <!-- Additional directions -->
+      <ion-item class="rounded-sm">
+        <ion-input
+          label="Additional direction (optional)"
+          label-placement="floating"
+          fill="outline"
+          placeholder="Enter additional directions"
+          type="text"
+          [(ngModel)]="addressForm.additionalDirections"
+          name="additionalDirections"
+        ></ion-input>
+      </ion-item>
+
+      <!-- Phone number -->
+      <ion-item class="rounded-sm">
+        <ion-input
+          label="Phone number"
+          label-placement="floating"
+          fill="outline"
+          placeholder="Enter phone number"
+          type="tel"
+          [(ngModel)]="addressForm.phoneNumber"
+          name="phoneNumber"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <!-- Address label -->
+      <ion-item class="rounded-sm">
+        <ion-input
+          label="Address label (optional)"
+          label-placement="floating"
+          fill="outline"
+          placeholder="e.g. Home, Work, etc."
+          type="text"
+          [(ngModel)]="addressForm.addressLabel"
+          name="addressLabel"
+        ></ion-input>
+      </ion-item>
+    </div>
+
+    <button
+      expand="block"
+      color="danger"
+      type="submit"
+      class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full"
+    >
+      Save Address
+    </button>
+  </form>
+</ion-content>

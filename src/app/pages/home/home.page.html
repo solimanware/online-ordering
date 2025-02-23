@@ -1,0 +1,159 @@
+<ion-content
+  class="ion-padding"
+  scrollEvents="true"
+  (ionScroll)="handleScroll($event)"
+>
+  <header class="bg-white shadow-none mt-4">
+    <div class="header flex-col">
+      <div class="flex justify-between items-center py-1">
+        <div class="left">
+          <button class="bg-red-600 text-white px-4 py-1 rounded-l-lg">
+            Delivery
+          </button>
+          <button class="bg-red-100 text-red-600 px-4 py-1 rounded-r-lg">
+            Pickup
+          </button>
+        </div>
+        <div class="right flex items-center gap-3">
+          <ion-icon name="globe-outline" class="text-black text-xl"></ion-icon>
+          @if ((isUserLoggedIn$|async) === false) {
+          <button
+            (click)="login()"
+            class="bg-gray-100 px-4 py-1 rounded-lg text-black"
+          >
+            Login
+          </button>
+          } @else {
+          <ion-icon name="person-outline" class="text-black text-xl"></ion-icon>
+          }
+        </div>
+      </div>
+
+      @if ((orderType$|async) === 'delivery' && (isUserLoggedIn$|async) ===
+      true) {
+      <h1 class="text-black mt-2 flex items-center">
+        Delivery to <span class="font-bold ml-1">Apartment</span>
+        <ion-icon name="chevron-down-outline" class="ml-1"></ion-icon>
+      </h1>
+      }
+    </div>
+  </header>
+  <div class="hero">
+    <img src="assets/images/hero.png" alt="Hero Image" />
+  </div>
+
+  @if(userLocation$|async) {
+  <div class="flex items-center pt-4">
+    <img
+      src="assets/images/logo.jpeg"
+      alt="Restaurant Logo"
+      class="w-10 h-10 rounded-full object-cover"
+    />
+    <h1 class="ml-3 text-xl font-bold text-gray-800">
+      {{(metaData$|async).branches[0].name}}
+    </h1>
+  </div>
+  <div class="resturant-details flex items-center justify-between text-sm">
+    <div class="flex justify-center items-center ml-2">
+      <p>{{metaData$.value.branches[0].address}}</p>
+      <button class="ml-4 bg-green-300 px-4 py-1 rounded-full text-green-900">
+        Open
+      </button>
+    </div>
+    <p class="text-red-600 underline">More Info</p>
+  </div>
+  } @else {
+  <div
+    [routerLink]="['/specify-location']"
+    [queryParams]="{returnTo: 'home'}"
+    class="choose-location flex items-start bg-blue-50 p-2 rounded-lg mt-2"
+  >
+    <ion-icon class="text-blue-900 text-4xl" name="location-outline"></ion-icon>
+    <div class="text-blue-900">
+      Please specify your location to find the nearest branch
+    </div>
+  </div>
+  }
+  <div
+    [class]="isFixedContentSticky ? 'fixed-content sticky' : 'fixed-content'"
+    [ngStyle]="{'position': isFixedContentSticky ? 'fixed' : 'relative', 
+                   'top': isFixedContentSticky ? '0' : 'auto',
+                   'z-index': isFixedContentSticky ? '1000' : 'auto',
+                   'background': isFixedContentSticky ? 'white' : 'transparent',
+                   'width': '100%',
+                   'left': '0',
+'padding': isFixedContentSticky?'0px 16px':'0'}"
+  >
+    <div class="seachbar-container pt-4">
+      <ion-searchbar mode="md"></ion-searchbar>
+    </div>
+    <div class="categories">
+      <ion-segment
+        mode="md"
+        [(ngModel)]="activeCategory"
+        scrollable
+        class="pt-4 scrollbar-hide"
+      >
+        @for (category of (categories$|async); track $index) {
+        <ion-segment-button
+          value="{{category.name.en}}"
+          [class]="'text-sm text-white rounded-xl m-1 scrollbar-hide'"
+          (click)="scrollToCategory(category.name.en)"
+        >
+          <ion-label>
+            <div class="flex flex-col items-center">{{category.name.en}}</div>
+          </ion-label>
+        </ion-segment-button>
+        }
+      </ion-segment>
+    </div>
+  </div>
+
+  <div class="items" (click)="itemChoosen()">
+    @for (category of (categories$|async); track $index) {
+    <h1
+      [id]="'category-' + category.name.en"
+      class="text-xl text-red-600 px-2 border-b-2 border-red-600 w-fit"
+    >
+      {{category.name.en}}
+    </h1>
+    @for (item of category.items; track $index) {
+    <div class="item flex mt-4 bg-slate-50" (click)="selectItem(item)">
+      <img class="w-24 rounded-lg" src="{{item.imageUrl}}" alt="Burger" />
+      <div class="flex flex-col ml-4 w-full">
+        <h2 class="text-lg font-bold">{{item.name.en}}</h2>
+        <p class="text-sm text-gray-500">{{item.description.en}}</p>
+        <!-- @if (shouldShowPrices$ | async) { -->
+        <p class="text-lg font-bold mt-2 text-right">
+          {{item.price.amount}} {{item.price.currency}}
+        </p>
+        <!-- } -->
+      </div>
+    </div>
+    } }
+  </div>
+</ion-content>
+@if ((paymentSummary$|async)?.itemsCount>0) {
+<ion-footer class="ion-no-border">
+  <div class="p-4 bg-white shadow-top">
+    <div class="flex items-center justify-between">
+      <button
+        class="flex items-center bg-red-600 rounded-full text-white text-lg w-full h-12"
+        routerLink="/cart"
+      >
+        <div
+          class="flex items-center justify-center bg-red-700 rounded-full w-10 h-10 mr-3 ml-3"
+        >
+          {{(paymentSummary$|async)?.itemsCount}}
+        </div>
+        <span class="mx-3">View Order</span>
+        <div class="grow"></div>
+        <div class="flex items-center justify-center px-4">
+          {{(paymentSummary$|async)?.total}}
+          {{(paymentSummary$|async)?.currency}}
+        </div>
+      </button>
+    </div>
+  </div>
+</ion-footer>
+}
