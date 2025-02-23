@@ -13,7 +13,7 @@ import {
 
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
-
+//hi
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
