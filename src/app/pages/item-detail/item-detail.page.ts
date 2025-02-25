@@ -3,13 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  IonBackButton,
-  IonButtons,
   IonContent,
   IonFooter,
   IonHeader,
   IonIcon,
-  IonToolbar,
   ToastController,
 } from '@ionic/angular/standalone';
 import { Item, Modifier, Variant } from 'src/app/interfaces/categories';
@@ -37,9 +34,6 @@ export interface ItemDetail extends Item {
     IonIcon,
     IonContent,
     IonHeader,
-    IonToolbar,
-    IonButtons,
-    IonBackButton,
     IonFooter,
     CommonModule,
     FormsModule,
