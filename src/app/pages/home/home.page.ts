@@ -1,10 +1,9 @@
-import { AsyncPipe, NgIf, NgStyle } from '@angular/common';
+import { AsyncPipe, NgStyle } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
   IonContent,
-  IonFooter,
   IonIcon,
   IonLabel,
   IonSearchbar,
@@ -48,9 +47,7 @@ import { UserType } from 'src/app/services/user.service';
     FormsModule,
     CartSummryCtaComponent,
     ChoosePickupBranchActionSheetComponent,
-    IonFooter,
     NgStyle,
-    NgIf,
   ],
 })
 export class HomePage {
@@ -118,7 +115,11 @@ export class HomePage {
   selectItem(item: Item) {
     this.homePageService.selectedItem$.next(item);
     console.log(item);
-    this.router.navigate(['/item-detail']);
+    if (this.userLocation$.getValue()) {
+      this.router.navigate(['/item-detail']);
+    } else {
+      this.router.navigate(['/specify-location']);
+    }
   }
 
   async login() {

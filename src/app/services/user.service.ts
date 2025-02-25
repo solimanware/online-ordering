@@ -9,11 +9,11 @@ export type UserType =
   providedIn: 'root',
 })
 export class UserService {
-  userType: UserType = 'newUserDelivery';
-  userLocation: [number, number] | null = null;
-  userPhoneNumber: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  userName: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  userAddress: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  userType$: UserType = 'newUserDelivery';
+  userLocation$: [number, number] | null = null;
+  userPhoneNumber$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  userName$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  userAddress$: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor() {}
 }

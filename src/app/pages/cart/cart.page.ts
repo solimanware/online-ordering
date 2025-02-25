@@ -9,7 +9,9 @@ import {
   IonIcon,
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
+import { BehaviorSubject } from 'rxjs';
 import { CartService } from 'src/app/services/cart.service';
+import { UserService } from 'src/app/services/user.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 
 export interface CartDisplayedItem extends ItemDetail {
@@ -44,9 +46,13 @@ export class CartPage {
   cartSummary$ = this.cartService.cartSummary$;
   paymentSummary$ = this.cartService.paymentSummary$;
   action: 'cta' | 'phone-verification' | 'otp' | 'name' = 'cta';
-  phoneNumber: string = '';
-  name: string = '';
-  constructor(private cartService: CartService, private router: Router) {
+  phoneNumber$: BehaviorSubject<string> = this.userService.userPhoneNumber$;
+  name$: BehaviorSubject<string> = this.userService.userName$;
+  constructor(
+    private cartService: CartService,
+    private router: Router,
+    private userService: UserService
+  ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);
     });

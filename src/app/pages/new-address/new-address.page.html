@@ -69,7 +69,7 @@
     </ion-segment>
   </div>
 
-  <form class="px-4" (ngSubmit)="saveAddress()">
+  <form class="px-4" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
     <div>
       <!-- Building name -->
       <ion-item class="rounded-sm">
@@ -79,8 +79,7 @@
           fill="outline"
           placeholder="Enter building name"
           type="text"
-          [(ngModel)]="addressForm.buildingName"
-          name="buildingName"
+          formControlName="buildingName"
           required
         ></ion-input>
       </ion-item>
@@ -94,8 +93,7 @@
             fill="outline"
             placeholder="Enter apartment number"
             type="text"
-            [(ngModel)]="addressForm.aptNo"
-            name="aptNo"
+            formControlName="aptNo"
             required
           ></ion-input>
         </ion-item>
@@ -107,8 +105,7 @@
             fill="outline"
             placeholder="Enter floor number"
             type="text"
-            [(ngModel)]="addressForm.floor"
-            name="floor"
+            formControlName="floor"
           ></ion-input>
         </ion-item>
       </div>
@@ -121,8 +118,7 @@
           fill="outline"
           placeholder="Enter your name"
           type="text"
-          [(ngModel)]="addressForm.name"
-          name="name"
+          formControlName="name"
           required
         ></ion-input>
       </ion-item>
@@ -135,8 +131,7 @@
           fill="outline"
           placeholder="Enter additional directions"
           type="text"
-          [(ngModel)]="addressForm.additionalDirections"
-          name="additionalDirections"
+          formControlName="additionalDirections"
         ></ion-input>
       </ion-item>
 
@@ -148,8 +143,7 @@
           fill="outline"
           placeholder="Enter phone number"
           type="tel"
-          [(ngModel)]="addressForm.phoneNumber"
-          name="phoneNumber"
+          formControlName="phoneNumber"
           required
         ></ion-input>
       </ion-item>
@@ -162,8 +156,7 @@
           fill="outline"
           placeholder="e.g. Home, Work, etc."
           type="text"
-          [(ngModel)]="addressForm.addressLabel"
-          name="addressLabel"
+          formControlName="addressLabel"
         ></ion-input>
       </ion-item>
     </div>

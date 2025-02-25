@@ -1,11 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
   IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
   IonSegment,
@@ -27,6 +33,7 @@ import {
 import { Map } from 'maplibre-gl';
 import { style } from '../specify-location/specify-location.page';
 import { LocationService } from './../../services/location.service';
+import { UserService } from './../../services/user.service';
 
 interface AddressForm {
   buildingName: string;
@@ -55,26 +62,32 @@ interface AddressForm {
     IonSegment,
     IonSegmentButton,
     IonLabel,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
   ],
 })
-export class NewAddressPage implements OnInit {
+export class NewAddressPage {
   map: Map;
   mapStyle = style;
   zoomLevel: [number] = [12];
   mapCenter: [number, number] = [31.2357, 30.0444];
   selectedSegment = 'apartment';
 
-  addressForm: AddressForm = {
-    buildingName: '',
-    aptNo: '',
-    floor: '',
-    name: '',
-    additionalDirections: '',
-    phoneNumber: '',
-    addressLabel: '',
-  };
+  addressForm: FormGroup = new FormGroup({
+    buildingName: new FormControl(''),
+    aptNo: new FormControl(''),
+    floor: new FormControl(''),
+    name: new FormControl(this.userService.userName$.value),
+    additionalDirections: new FormControl(''),
+    phoneNumber: new FormControl(this.userService.userPhoneNumber$.value),
+    addressLabel: new FormControl(''),
+  });
 
-  constructor(private locationService: LocationService) {
+  constructor(
+    private locationService: LocationService,
+    private userService: UserService
+  ) {
     addIcons({
       arrowBackOutline,
       location,
@@ -86,9 +99,11 @@ export class NewAddressPage implements OnInit {
       businessOutline,
       libraryOutline,
     });
+    console.log('user phone number', this.userService.userPhoneNumber$.value);
   }
 
-  ngOnInit() {
+  onMapLoaded(event: Map) {
+    this.map = event;
     this.locationService.getCurrentPosition().subscribe((position) => {
       if (position) {
         console.log(position);
@@ -98,10 +113,6 @@ export class NewAddressPage implements OnInit {
         });
       }
     });
-  }
-
-  onMapLoaded(event: Map) {
-    this.map = event;
   }
 
   saveAddress() {
