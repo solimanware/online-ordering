@@ -1,0 +1,67 @@
+# .gitlab-ci.yml
+variables:
+  # S3 Configuration
+  S3_BUCKET: "order.tappya.com"
+  AWS_DEFAULT_REGION: "eu-west-1"
+  # Optional: Set custom path within bucket
+  S3_PATH: "/"
+
+# Define stages
+stages:
+  - build
+  - test
+  - deploy
+
+# Build stage for compiling/preparing assets
+build:
+  stage: build
+  image: node:16  # Adjust based on your project needs
+  script:
+    - npm install
+    - npm run build  # or your build command
+  artifacts:
+    paths:
+      - dist/  # Adjust to your build output directory
+    expire_in: 1 hour
+  cache:
+    paths:
+      - node_modules/
+  only:
+    - master  # Run only on main branch
+
+# Test stage
+test:
+  stage: test
+  image: node:16
+  script:
+    - npm install
+    - npm run test  # Adjust to your test command
+  cache:
+    paths:
+      - node_modules/
+  only:
+    - master
+
+# Deploy to S3
+deploy_s3:
+  stage: deploy
+  image: 
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
+  dependencies:
+    - build
+  before_script:
+    # Verify AWS credentials are set
+    - aws sts get-caller-identity
+  script:
+    # Sync built files to S3
+    - aws s3 sync dist/ s3://${S3_BUCKET}${S3_PATH} --delete
+    # Optional: Set cache headers
+    - aws s3 cp s3://${S3_BUCKET}${S3_PATH} s3://${S3_BUCKET}${S3_PATH} --recursive --metadata-directive REPLACE --cache-control max-age=86400,public
+    # Optional: Invalidate CloudFront distribution if using CDN
+    # - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"
+  only:
+    - master
+  environment:
+    name: production
+    url: https://${S3_BUCKET}.s3.${AWS_DEFAULT_REGION}.amazonaws.com${S3_PATH}
