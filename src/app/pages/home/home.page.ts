@@ -1,4 +1,4 @@
-import { AsyncPipe, NgStyle } from '@angular/common';
+import { AsyncPipe, NgIf, NgStyle } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -16,14 +16,17 @@ import { addIcons } from 'ionicons';
 import {
   cartOutline,
   chevronDownOutline,
+  closeOutline,
   globeOutline,
   locationOutline,
   personOutline,
   searchOutline,
 } from 'ionicons/icons';
 import { BehaviorSubject } from 'rxjs';
+import { CartSummryCtaComponent } from 'src/app/components/cart-summry-cta/cart-summry-cta.component';
+import { ChoosePickupBranchActionSheetComponent } from 'src/app/components/choose-pickup-branch-action-sheet/choose-pickup-branch-action-sheet.component';
 import { Category, Item } from 'src/app/interfaces/categories';
-import { MetaData } from 'src/app/interfaces/metaData';
+import { Branch, MetaData } from 'src/app/interfaces/metaData';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService, OrderType } from 'src/app/services/home-page.service';
 import { UserType } from 'src/app/services/user.service';
@@ -39,11 +42,15 @@ import { UserType } from 'src/app/services/user.service';
     IonSegmentButton,
     IonLabel,
     RouterLink,
-    IonFooter,
     IonIcon,
     NgStyle,
     AsyncPipe,
     FormsModule,
+    CartSummryCtaComponent,
+    ChoosePickupBranchActionSheetComponent,
+    IonFooter,
+    NgStyle,
+    NgIf,
   ],
 })
 export class HomePage {
@@ -64,6 +71,11 @@ export class HomePage {
     this.homePageService.isUserLoggedIn$;
   activeCategory: string = this.categories$.getValue()[0].name.en;
   paymentSummary$ = this.cartService.paymentSummary$;
+  nearestBranch$: BehaviorSubject<Branch> = this.homePageService.nearestBranch$;
+  shouldShowPickupActionSheet$: BehaviorSubject<boolean> =
+    this.homePageService.shouldShowPickupActionSheet$;
+  isPickupFlow$: BehaviorSubject<boolean> = this.homePageService.isPickupFlow$;
+  returnTo: string = 'home';
   constructor(
     private homePageService: HomePageService,
     private toastController: ToastController,
@@ -77,8 +89,30 @@ export class HomePage {
       chevronDownOutline,
       locationOutline,
       personOutline,
+      closeOutline,
     });
+  }
+
+  ionWillEnter() {
     this.homePageService.isUserLoggedIn$.next(true);
+    console.log(this.userLocation$.getValue());
+
+    if (this.userLocation$.getValue()) {
+      this.homePageService.nearestBranch$.next(
+        this.metaData$.value.branches[0]
+      );
+    } else {
+      //pickup mode
+      this.nearestBranch$.next(null);
+    }
+  }
+
+  closeBranchChooseActionSheet(event: any) {
+    console.log('event', event);
+  }
+
+  selectBranch() {
+    this.homePageService.nearestBranch$.next(this.metaData$.value.branches[0]);
   }
 
   selectItem(item: Item) {
@@ -146,5 +180,19 @@ export class HomePage {
 
   onOrderTypeChange(event: any) {
     this.orderType$.next(event.detail.value);
+
+    if (event.detail.value === 'pickup') {
+      setTimeout(() => {
+        this.homePageService.shouldShowPickupActionSheet$.next(true);
+        this.isPickupFlow$.next(true);
+      }, 0);
+    } else {
+      this.homePageService.shouldShowPickupActionSheet$.next(false);
+      this.isPickupFlow$.next(false);
+    }
+  }
+
+  closePickupMode() {
+    this.orderType$.next('delivery');
   }
 }

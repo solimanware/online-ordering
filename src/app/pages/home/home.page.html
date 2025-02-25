@@ -48,7 +48,7 @@
     <img src="assets/images/hero.png" alt="Hero Image" />
   </div>
 
-  @if(userLocation$|async) {
+  @if((nearestBranch$|async)) {
   <div class="flex items-center pt-4">
     <img
       src="assets/images/logo.jpeg"
@@ -56,12 +56,12 @@
       class="w-10 h-10 rounded-full object-cover"
     />
     <h1 class="ml-3 text-xl font-bold text-gray-800">
-      {{(metaData$|async).branches[0].name}}
+      {{(nearestBranch$|async)?.name}}
     </h1>
   </div>
   <div class="resturant-details flex items-center justify-between text-sm">
     <div class="flex justify-center items-center ml-2">
-      <p>{{metaData$.value.branches[0].address}}</p>
+      <p>{{nearestBranch$.value?.address}}</p>
       <button class="ml-4 bg-green-300 px-4 py-1 rounded-full text-green-900">
         Open
       </button>
@@ -71,7 +71,7 @@
   } @else {
   <div
     [routerLink]="['/specify-location']"
-    [queryParams]="{returnTo: 'item-detail'}"
+    [queryParams]="{returnTo:returnTo}"
     class="choose-location flex items-start bg-blue-50 p-2 rounded-lg mt-2"
   >
     <ion-icon class="text-blue-900 text-4xl" name="location-outline"></ion-icon>
@@ -84,7 +84,7 @@
     [class]="isFixedContentSticky ? 'fixed-content sticky' : 'fixed-content'"
     [ngStyle]="{'position': isFixedContentSticky ? 'fixed' : 'relative', 
                    'top': isFixedContentSticky ? '0' : 'auto',
-                   'z-index': isFixedContentSticky ? '1000' : 'auto',
+                   'z-index': isFixedContentSticky ? '2' : 'auto',
                    'background': isFixedContentSticky ? 'white' : 'transparent',
                    'width': '100%',
                    'left': '0',
@@ -151,28 +151,20 @@
     </div>
     } }
   </div>
-</ion-content>
-@if ((paymentSummary$|async)?.itemsCount>0) {
-<ion-footer class="ion-no-border">
-  <div class="p-4 bg-white shadow-top">
-    <div class="flex items-center justify-between">
-      <button
-        class="flex items-center bg-red-600 rounded-full text-white text-lg w-full h-12"
-        routerLink="/cart"
-      >
-        <div
-          class="flex items-center justify-center bg-red-700 rounded-full w-10 h-10 mr-3 ml-3"
-        >
-          {{(paymentSummary$|async)?.itemsCount}}
-        </div>
-        <span class="mx-3">View Order</span>
-        <div class="grow"></div>
-        <div class="flex items-center justify-center px-4">
-          {{(paymentSummary$|async)?.total}}
-          {{(paymentSummary$|async)?.currency}}
-        </div>
-      </button>
+  <div class="mb-24"></div>
+  @if((shouldShowPickupActionSheet$|async)) {
+  <footer
+    class="fixed h-fit bottom-0 left-0 right-0 w-full bg-white shadow-lg"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="action-sheet relative">
+      <app-choose-pickup-branch-action-sheet
+        [branches]="(metaData$ | async)?.branches"
+        (closeSheet)="closeBranchChooseActionSheet($event)"
+      ></app-choose-pickup-branch-action-sheet>
     </div>
-  </div>
-</ion-footer>
-}
+  </footer>
+  } @if((paymentSummary$|async).itemsCount > 0) {
+  <app-cart-summry-cta routerLink="/cart"></app-cart-summry-cta>
+  }
+</ion-content>

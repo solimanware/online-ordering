@@ -1,0 +1,18 @@
+ion-searchbar {
+  --box-shadow: none;
+  border: 1px solid #c3c3c5;
+  border-radius: 4px;
+  height: 40px;
+  &::ng-deep {
+    input.searchbar-input.sc-ion-searchbar-md {
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      padding-left: 16px !important;
+    }
+    .searchbar-search-icon.sc-ion-searchbar-md {
+      top: 5px;
+      right: 16px !important;
+      left: auto !important;
+    }
+  }
+}

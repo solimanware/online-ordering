@@ -55,6 +55,8 @@ export class SpecifyLocationPage {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         const params = new URLSearchParams(event.url.split('?')[1]);
+        console.log(params.get('returnTo'));
+
         if (params.get('returnTo') === 'home') {
           this.returnTo = 'home';
         } else if (params.get('returnTo') === 'item-detail') {

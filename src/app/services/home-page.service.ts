@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { BehaviorSubject } from 'rxjs';
 import { Category, Item } from 'src/app/interfaces/categories';
+import { Branch } from 'src/app/interfaces/metaData';
 import { fakeCategoriesData } from '../data/fakeCategoriesData';
 import { fakeMetaData } from '../data/fakeMetaData';
 import { MetaData } from '../interfaces/metaData';
@@ -17,6 +18,9 @@ export class HomePageService {
   categories$ = new BehaviorSubject<Category[]>([]);
   metaData$ = new BehaviorSubject<MetaData>(null);
   selectedItem$ = new BehaviorSubject<Item | null>(null);
+  nearestBranch$ = new BehaviorSubject<Branch | null>(null);
+  shouldShowPickupActionSheet$ = new BehaviorSubject<boolean>(false);
+  isPickupFlow$ = new BehaviorSubject<boolean>(false);
   constructor(private toastController: ToastController) {
     this.getCategories();
     this.getMetaData();
