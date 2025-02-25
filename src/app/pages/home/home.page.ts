@@ -78,6 +78,7 @@ export class HomePage {
       locationOutline,
       personOutline,
     });
+    this.homePageService.isUserLoggedIn$.next(true);
   }
 
   selectItem(item: Item) {
@@ -102,7 +103,7 @@ export class HomePage {
     const isLoggedIn = this.homePageService.isUserLoggedIn$.getValue();
     const isLocationSet = this.homePageService.userLocation$.getValue();
     console.log(isLoggedIn, isLocationSet);
-    if (isLoggedIn && isLocationSet) {
+    if (isLocationSet) {
       this.router.navigate(['/item-detail']);
     } else {
       this.router.navigate(['/specify-location']);
@@ -141,5 +142,9 @@ export class HomePage {
   scrollToCategory(categoryName: string) {
     const element = document.getElementById(`category-${categoryName}`);
     this.content.scrollToPoint(0, element.offsetTop - 128, 500);
+  }
+
+  onOrderTypeChange(event: any) {
+    this.orderType$.next(event.detail.value);
   }
 }

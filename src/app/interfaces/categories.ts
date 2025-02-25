@@ -25,8 +25,8 @@ export interface Item {
   sequence: string;
   fromTime: string;
   toTime: string;
-  product_id: number;
-  barcode: Barcode;
+  product_id: string;
+  barcode: string;
   name: NameClass;
   code: string;
   description: NameClass;
@@ -73,7 +73,6 @@ export interface ModifierCategory {
   minSelection: number;
   imageUrl: string;
   modifiers: Modifier[];
-  price: Price;
 }
 
 export interface Modifier {
@@ -93,8 +92,8 @@ export interface Modifier {
 }
 
 export interface PurpleDescription {
-  ar: boolean;
-  en: boolean;
+  ar: string;
+  en: string;
 }
 
 export interface Price {
@@ -122,7 +121,7 @@ export interface VariantCategory {
 export interface Variant {
   id: string;
   name: NameClass;
-  code: string;
+  code: string | boolean;
   imageUrl: string;
   outOfStock: boolean;
   price: Price;

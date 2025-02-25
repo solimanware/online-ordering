@@ -3,7 +3,6 @@ import {
   PreloadAllModules,
   RouteReuseStrategy,
   provideRouter,
-  withHashLocation,
   withPreloading,
 } from '@angular/router';
 import {
@@ -21,10 +20,6 @@ bootstrapApplication(AppComponent, {
       mode: 'ios',
     }),
     provideRouter(routes, withPreloading(PreloadAllModules)),
-    provideRouter(
-      routes,
-      withPreloading(PreloadAllModules),
-      withHashLocation()
-    ),
+    provideRouter(routes, withPreloading(PreloadAllModules)),
   ],
 });

@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
-  IonButton,
   IonContent,
   IonHeader,
   IonIcon,
@@ -11,8 +10,6 @@ import {
   IonLabel,
   IonSegment,
   IonSegmentButton,
-  IonTitle,
-  IonToolbar,
 } from '@ionic/angular/standalone';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { addIcons } from 'ionicons';
@@ -47,13 +44,10 @@ interface AddressForm {
   styleUrls: ['./new-address.page.scss'],
   standalone: true,
   imports: [
-    IonButton,
     IonItem,
     IonIcon,
     IonContent,
     IonHeader,
-    IonTitle,
-    IonToolbar,
     CommonModule,
     FormsModule,
     RouterLink,

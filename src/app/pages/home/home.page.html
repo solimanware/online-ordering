@@ -7,12 +7,18 @@
     <div class="header flex-col">
       <div class="flex justify-between items-center py-1">
         <div class="left">
-          <button class="bg-red-600 text-white px-4 py-1 rounded-l-lg">
-            Delivery
-          </button>
-          <button class="bg-red-100 text-red-600 px-4 py-1 rounded-r-lg">
-            Pickup
-          </button>
+          <ion-segment
+            [value]="(orderType$ | async)"
+            (ionChange)="onOrderTypeChange($event)"
+            class="bg-white"
+          >
+            <ion-segment-button value="delivery" class="delivery-segment">
+              <ion-label>Delivery</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="pickup" class="pickup-segment">
+              <ion-label>Pickup</ion-label>
+            </ion-segment-button>
+          </ion-segment>
         </div>
         <div class="right flex items-center gap-3">
           <ion-icon name="globe-outline" class="text-black text-xl"></ion-icon>
@@ -65,7 +71,7 @@
   } @else {
   <div
     [routerLink]="['/specify-location']"
-    [queryParams]="{returnTo: 'home'}"
+    [queryParams]="{returnTo: 'item-detail'}"
     class="choose-location flex items-start bg-blue-50 p-2 rounded-lg mt-2"
   >
     <ion-icon class="text-blue-900 text-4xl" name="location-outline"></ion-icon>
@@ -113,21 +119,34 @@
     @for (category of (categories$|async); track $index) {
     <h1
       [id]="'category-' + category.name.en"
-      class="text-xl text-red-600 px-2 border-b-2 border-red-600 w-fit"
+      class="text-xl text-black my-4 px-2 0 w-fit"
     >
       {{category.name.en}}
     </h1>
     @for (item of category.items; track $index) {
-    <div class="item flex mt-4 bg-slate-50" (click)="selectItem(item)">
-      <img class="w-24 rounded-lg" src="{{item.imageUrl}}" alt="Burger" />
-      <div class="flex flex-col ml-4 w-full">
-        <h2 class="text-lg font-bold">{{item.name.en}}</h2>
-        <p class="text-sm text-gray-500">{{item.description.en}}</p>
-        <!-- @if (shouldShowPrices$ | async) { -->
-        <p class="text-lg font-bold mt-2 text-right">
-          {{item.price.amount}} {{item.price.currency}}
-        </p>
-        <!-- } -->
+    <div
+      class="item flex mt-2 border-b-2 border-gray-200 pb-2"
+      (click)="selectItem(item)"
+    >
+      <div class="ml-2 flex items-start">
+        <img
+          class="w-20 h-20 object-cover"
+          src="{{item.imageUrl}}"
+          alt="Burger"
+        />
+        <div
+          class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none"
+        >
+          <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
+          <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
+            {{item.description.en}}
+          </p>
+          @if (item.price.amount) {
+          <p class="text-lg font-bold mt-auto text-right">
+            {{item.price.amount}} {{item.price.currency}}
+          </p>
+          }
+        </div>
       </div>
     </div>
     } }
@@ -157,3 +176,10 @@
   </div>
 </ion-footer>
 }
+
+<ion-segment
+  [value]="(orderType$ | async)"
+  (ionChange)="onOrderTypeChange($event)"
+  class="bg-white"
+>
+</ion-segment>

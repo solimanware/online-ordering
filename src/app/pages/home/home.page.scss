@@ -61,3 +61,40 @@ ion-segment-button {
 ion-segment-button.segment-button-checked ion-label {
   color: #fff !important;
 }
+
+.delivery-segment {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  margin: 0;
+  min-width: 80px;
+}
+
+.pickup-segment {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  margin: 0;
+  min-width: 80px;
+}
+
+.delivery-segment.segment-button-checked {
+  background-color: #d80e0e !important;
+  color: #fff !important;
+}
+
+.pickup-segment.segment-button-checked {
+  background-color: #d80e0e !important;
+  color: #fff !important;
+}
+
+// Add this to ensure the segments are touching
+ion-segment {
+  --border-radius: 8px;
+}
+
+ion-segment-button {
+  min-width: 100px;
+}

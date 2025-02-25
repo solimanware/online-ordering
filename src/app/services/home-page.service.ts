@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { BehaviorSubject } from 'rxjs';
 import { Category, Item } from 'src/app/interfaces/categories';
-import { environment } from 'src/environments/environment';
 import { fakeCategoriesData } from '../data/fakeCategoriesData';
 import { fakeMetaData } from '../data/fakeMetaData';
 import { MetaData } from '../interfaces/metaData';
@@ -13,7 +12,7 @@ export type OrderType = 'delivery' | 'pickup' | null;
 export class HomePageService {
   shouldShowPrices$ = new BehaviorSubject<boolean>(false);
   isUserLoggedIn$ = new BehaviorSubject<boolean>(false);
-  orderType$ = new BehaviorSubject<OrderType>(null);
+  orderType$ = new BehaviorSubject<OrderType>('delivery');
   userLocation$ = new BehaviorSubject<[number, number] | null>(null);
   categories$ = new BehaviorSubject<Category[]>([]);
   metaData$ = new BehaviorSubject<MetaData>(null);
@@ -21,9 +20,6 @@ export class HomePageService {
   constructor(private toastController: ToastController) {
     this.getCategories();
     this.getMetaData();
-    if (environment.demoMode) {
-      this.setDemoMode();
-    }
   }
 
   async setDemoMode() {

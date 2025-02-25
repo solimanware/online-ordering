@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import {
-  IonContent,
   IonHeader,
   IonIcon,
   IonSegment,
@@ -37,7 +36,6 @@ export const style = `https://maps.geo.${awsRegion}.amazonaws.com/v2/styles/${ma
     IonSegment,
     IonSegmentButton,
     FormsModule,
-    IonContent,
     RouterLink,
   ],
 })
@@ -47,7 +45,7 @@ export class SpecifyLocationPage {
   zoomLevel: [number] = [5];
   mapCenter: [number, number] = [30.0444, 31.2357];
   map: Map;
-  returnTo: string = 'home';
+  returnTo: string = 'item-detail';
 
   constructor(
     private homePageService: HomePageService,

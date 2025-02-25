@@ -1,14 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
-  IonBackButton,
-  IonButtons,
   IonContent,
   IonFooter,
   IonHeader,
-  IonToolbar,
+  IonIcon,
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
 import { CartService } from 'src/app/services/cart.service';
@@ -32,15 +30,14 @@ export interface CartSummary {
   styleUrls: ['./cart.page.scss'],
   standalone: true,
   imports: [
-    IonButtons,
-    IonBackButton,
+    IonIcon,
     IonContent,
     IonHeader,
-    IonToolbar,
     CommonModule,
     FormsModule,
     IonFooter,
     CodeInputModule,
+    RouterLink,
   ],
 })
 export class CartPage {
