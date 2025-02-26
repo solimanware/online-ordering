@@ -1,0 +1,161 @@
+<ion-header>
+  <div class="p-4 bg-white">
+    <div class="flex items-center gap-4 mb-4">
+      <div
+        class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-sm"
+        [routerLink]="['/home']"
+      >
+        <ion-icon
+          name="arrow-back-outline"
+          class="text-2xl text-gray-700"
+        ></ion-icon>
+      </div>
+      <div class="text-2xl font-bold text-gray-700">Check out</div>
+    </div>
+  </div>
+</ion-header>
+<ion-content>
+  <div
+    class="h-28 border border-black mx-4 flex items-center justify-center relative rounded-sm"
+  >
+    <mgl-map
+      [style]="mapStyle"
+      [zoom]="[15]"
+      [center]="[31.2357, 30.0444]"
+      (mapLoad)="onMapLoaded($event)"
+      class="absolute inset-0 w-full h-full"
+    >
+    </mgl-map>
+    <ion-icon
+      name="location"
+      class="text-5xl text-red-500 absolute pointer-events-none"
+      style="transform: translate(-50%, -50%); top: 50%; left: 50%"
+    ></ion-icon>
+  </div>
+  <div class="p-4 border m-4 border-gray-200 rounded-sm">
+    <div class="flex items-center gap-2">
+      <img src="assets/icons/location-pin.svg" class="text-gray-600" />
+      <p class="text-gray-600">Delivery</p>
+    </div>
+    <div class="flex items-center gap-2 text-gray-600">Giza- Elomraneya 14</div>
+    <div class="mobile-number text-gray-600">Street name</div>
+    <div class="mobile-number text-gray-600">Mobile Number: 01029889661</div>
+  </div>
+  <div class="p-4 border m-4 border-gray-200 rounded-sm">
+    <div class="flex items-center gap-2">
+      <img src="assets/icons/motorbike.svg" class="text-gray-600" />
+      <p class="text-gray-600">Delivery</p>
+    </div>
+    <div class="mobile-number text-gray-600">Arriving in approx. 30 mins</div>
+  </div>
+  <h1 class="text-2xl font-bold text-gray-700 px-4">Pay with</h1>
+  <div class="p-4 border m-4 border-gray-200 rounded-sm">
+    <div class="flex justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <img src="assets/icons/wallet.svg" class="text-gray-600" />
+        <p class="text-gray-600">Cash</p>
+      </div>
+      <div class="flex items-center">
+        <input
+          type="radio"
+          [checked]="true"
+          id="default-radio-2"
+          value="yes"
+          name="default-radio"
+          class="form-radio w-4 h-4 text-red-600 bg-gray-100 border-gray-300 focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        />
+      </div>
+    </div>
+  </div>
+  <h1 class="text-2xl font-bold text-gray-700 px-4">Your order</h1>
+  @for (cartDisplayedItem of (cartSummary$ | async); track $index) {
+  <div
+    class="item bg-white border-b-2 border-gray-200 p-4 flex items-center justify-between mb-4"
+  >
+    <div class="flex flex-col gap-1">
+      <h2 class="text-lg font-semibold text-gray-900">
+        {{cartDisplayedItem?.item?.name?.en}}
+      </h2>
+      <p class="text-sm text-gray-600 line-clamp-2 w-44">
+        {{cartDisplayedItem?.item?.description?.en}}
+      </p>
+
+      <p class="text-lg font-bold text-red-600 mt-1">
+        +{{cartDisplayedItem?.totalPrice}}
+        {{cartDisplayedItem?.item?.price?.currency}}
+      </p>
+    </div>
+    <div class="relative w-24 h-24 rounded-xl overflow-hidden">
+      <img
+        src="{{cartDisplayedItem?.item?.imageUrl}}"
+        alt="Pizza Chicken"
+        class="w-full h-full object-cover"
+      />
+      <div
+        class="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/90 rounded-full px-2 py-1"
+      >
+        <button
+          (click)="decreaseQuantity(cartDisplayedItem?.item)"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-black text-sm font-medium"
+        >
+          -
+        </button>
+        <span class="text-sm font-medium w-4 text-center"
+          >{{ cartDisplayedItem?.quantity }}</span
+        >
+        <button
+          (click)="increaseQuantity(cartDisplayedItem?.item)"
+          class="w-6 h-6 rounded-full flex items-center justify-center text-red-600 text-sm font-medium"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="payment-summary p-4 bg-gray-200 m-4">
+    <h2 class="text-lg font-semibold text-gray-900">Payment Summary</h2>
+    <div class="subtotal flex">
+      <p class="text-lg text-gray-900">Subtotal</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.subtotal}}
+        {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+    <div class="tax flex">
+      <p class="text-lg text-gray-900">Tax</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.tax}} {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+    <div class="service-fee flex">
+      <p class="text-lg text-gray-900">Service Fee</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.serviceFee}}
+        {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+    <div class="total-amount flex font-semibold">
+      <p class="text-lg text-gray-900">Total amount</p>
+      <div class="grow"></div>
+      <p class="text-lg">
+        {{(paymentSummary$|async)?.total}} {{(paymentSummary$|async)?.currency}}
+      </p>
+    </div>
+  </div>
+  <div class="mx-4">
+    <button
+      expand="block"
+      color="danger"
+      type="submit"
+      class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full"
+      [routerLink]="['/order-tracking']"
+    >
+      Save Address
+    </button>
+  </div>
+</ion-content>
