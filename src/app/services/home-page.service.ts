@@ -3,10 +3,12 @@ import { ToastController } from '@ionic/angular/standalone';
 import { BehaviorSubject } from 'rxjs';
 import { Category, Item } from 'src/app/interfaces/categories';
 import { Branch } from 'src/app/interfaces/metaData';
+import { environment } from 'src/environments/environment';
 import { fakeCategoriesData } from '../data/fakeCategoriesData';
 import { fakeMetaData } from '../data/fakeMetaData';
 import { MetaData } from '../interfaces/metaData';
 export type OrderType = 'delivery' | 'pickup' | null;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -22,7 +24,6 @@ export class HomePageService {
   shouldShowPickupActionSheet$ = new BehaviorSubject<boolean>(false);
   isPickupFlow$ = new BehaviorSubject<boolean>(false);
   constructor(private toastController: ToastController) {
-    this.getCategories();
     this.getMetaData();
   }
 
@@ -42,12 +43,30 @@ export class HomePageService {
     }, 1000);
   }
 
-  getCategories() {
-    this.categories$.next(fakeCategoriesData);
-    console.log(this.categories$.value);
+  getCategories(url: string) {
+    fetch(url)
+      .then((res) => res.json())
+      .then((data: { categories: Category[] }) => {
+        console.log('categories', data);
+        this.categories$.next(data.categories);
+      });
   }
 
   getMetaData() {
-    this.metaData$.next(fakeMetaData);
+    if (environment.production) {
+      const url = new URL(window.location.href);
+      let firstSegment = url.pathname.split('/')[1];
+      console.log(firstSegment);
+      fetch(`https://api-test.tappya.com/link/search?account=${firstSegment}`)
+        .then((res) => res.json())
+        .then((data: MetaData) => {
+          console.log('meta data', data);
+          this.metaData$.next(data);
+          this.getCategories(data.branches[0].menuUrl);
+        });
+    } else {
+      this.metaData$.next(fakeMetaData);
+      this.categories$.next(fakeCategoriesData);
+    }
   }
 }

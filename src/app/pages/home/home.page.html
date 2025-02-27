@@ -1,3 +1,4 @@
+@if ((categories$ | async)?.length > 0) {
 <ion-content
   class="ion-padding"
   scrollEvents="true"
@@ -96,7 +97,8 @@
     <div class="categories">
       <ion-segment
         mode="md"
-        [(ngModel)]="activeCategory"
+        [ngModel]="activeCategory$|async"
+        (ngModelChange)="activeCategory$.next($event)"
         scrollable
         class="pt-4 scrollbar-hide"
       >
@@ -168,3 +170,10 @@
   <app-cart-summry-cta routerLink="/cart"></app-cart-summry-cta>
   }
 </ion-content>
+
+} @else {
+<div class="flex flex-col items-center justify-center h-screen">
+  <ion-spinner name="circular" class="w-12 h-12 text-red-600"></ion-spinner>
+  <p class="mt-4 text-gray-600">Loading menu...</p>
+</div>
+}

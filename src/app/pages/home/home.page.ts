@@ -9,6 +9,7 @@ import {
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
+  IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -48,6 +49,7 @@ import { UserType } from 'src/app/services/user.service';
     CartSummryCtaComponent,
     ChoosePickupBranchActionSheetComponent,
     NgStyle,
+    IonSpinner,
   ],
 })
 export class HomePage {
@@ -64,9 +66,11 @@ export class HomePage {
   userLocation$: BehaviorSubject<[number, number]> =
     this.homePageService.userLocation$;
   orderType$: BehaviorSubject<OrderType> = this.homePageService.orderType$;
+  activeCategory$: BehaviorSubject<string> = new BehaviorSubject<string>(
+    this.categories$.getValue()[0]?.name.en || ''
+  );
   isUserLoggedIn$: BehaviorSubject<boolean> =
     this.homePageService.isUserLoggedIn$;
-  activeCategory: string = this.categories$.getValue()[0].name.en;
   paymentSummary$ = this.cartService.paymentSummary$;
   nearestBranch$: BehaviorSubject<Branch> = this.homePageService.nearestBranch$;
   shouldShowPickupActionSheet$: BehaviorSubject<boolean> =
@@ -87,6 +91,12 @@ export class HomePage {
       locationOutline,
       personOutline,
       closeOutline,
+    });
+    this.categories$.subscribe((categories) => {
+      if (categories.length > 0) {
+        this.activeCategory$.next(categories[0].name.en);
+        console.log('active category', this.activeCategory$.value);
+      }
     });
   }
 
@@ -166,8 +176,8 @@ export class HomePage {
         const rect = element.getBoundingClientRect();
         if (rect.top <= 100) {
           // Adjust this value based on your layout
-          this.activeCategory = categories[i].name.en;
-          this.segment.value = this.activeCategory;
+          this.activeCategory$.next(categories[i].name.en);
+          this.segment.value = this.activeCategory$.value;
           break;
         }
       }
