@@ -2,7 +2,7 @@
   <div class="p-4 bg-white">
     <div class="flex items-center gap-4 mb-4">
       <div
-        class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-sm"
+        class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-sm cursor-pointer"
         [routerLink]="['/home']"
       >
         <ion-icon
@@ -15,4 +15,79 @@
   </div>
 </ion-header>
 
-<ion-content> </ion-content>
+<ion-content>
+  <div class="flex items-center justify-center">
+    <div class="flex items-center justify-center w-[300px] h-[300px]">
+      <ng-lottie
+        [options]="options"
+        style="width: 300px; height: 300px; margin: 0 auto; display: block"
+        (animationCreated)="animationCreated($event)"
+        (configReady)="configReady()"
+        (dataReady)="dataReady()"
+        (domLoaded)="domLoaded()"
+        (enterFrame)="enterFrame($event)"
+        (segmentStart)="segmentStart($event)"
+        (complete)="complete($event)"
+        (loopComplete)="loopComplete($event)"
+        (destroy)="destroy($event)"
+        (error)="error($event)"
+      />
+    </div>
+  </div>
+  <div class="p-6">
+    <div class="relative">
+      <!-- Timeline line -->
+      <div
+        class="absolute left-[19px] top-6 w-[2px] h-[calc(100%-40px)] bg-gray-200"
+      ></div>
+
+      <!-- Timeline steps -->
+      <div class="space-y-8">
+        <div *ngFor="let step of orderSteps" class="flex items-start gap-4">
+          <!-- Status dot -->
+          <div
+            class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center"
+            [ngClass]="{
+              'bg-red-500': step.status === 'completed' || step.status === 'current',
+              'bg-gray-200': step.status === 'pending'
+            }"
+          >
+            @if (step.status === 'completed') {
+            <ion-icon
+              name="checkmark-outline"
+              class="text-white text-lg"
+            ></ion-icon>
+            }
+          </div>
+
+          <!-- Step content -->
+          <div class="flex-1">
+            <p
+              class="text-lg"
+              [ngClass]="{
+                'text-gray-900': step.status !== 'pending',
+                'text-gray-400': step.status === 'pending'
+              }"
+            >
+              {{ step.title }}
+              <span *ngIf="step.time" class="text-gray-500"
+                >({{ step.time }})</span
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mx-4">
+    <button
+      expand="block"
+      color="danger"
+      type="submit"
+      class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full"
+      (click)="nextStep()"
+    >
+      Next Step
+    </button>
+  </div>
+</ion-content>
