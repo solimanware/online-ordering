@@ -7,11 +7,6 @@ export const routes: Routes = [
       import('./pages/home/home.page').then((m) => m.HomePage),
   },
   {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full',
-  },
-  {
     path: 'item-detail',
     loadComponent: () =>
       import('./pages/item-detail/item-detail.page').then(
@@ -32,14 +27,21 @@ export const routes: Routes = [
   },
   {
     path: 'new-address',
-    loadComponent: () => import('./pages/new-address/new-address.page').then( m => m.NewAddressPage)
+    loadComponent: () =>
+      import('./pages/new-address/new-address.page').then(
+        (m) => m.NewAddressPage
+      ),
   },
   {
     path: 'check-out',
-    loadComponent: () => import('./pages/check-out/check-out.page').then( m => m.CheckOutPage)
+    loadComponent: () =>
+      import('./pages/check-out/check-out.page').then((m) => m.CheckOutPage),
   },
   {
     path: 'order-tracking',
-    loadComponent: () => import('./pages/order-tracking/order-tracking.page').then( m => m.OrderTrackingPage)
+    loadComponent: () =>
+      import('./pages/order-tracking/order-tracking.page').then(
+        (m) => m.OrderTrackingPage
+      ),
   },
 ];

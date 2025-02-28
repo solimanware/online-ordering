@@ -23,9 +23,7 @@ export class HomePageService {
   nearestBranch$ = new BehaviorSubject<Branch | null>(null);
   shouldShowPickupActionSheet$ = new BehaviorSubject<boolean>(false);
   isPickupFlow$ = new BehaviorSubject<boolean>(false);
-  constructor(private toastController: ToastController) {
-    this.getMetaData();
-  }
+  constructor(private toastController: ToastController) {}
 
   async setDemoMode() {
     setTimeout(async () => {
@@ -52,21 +50,22 @@ export class HomePageService {
       });
   }
 
-  getMetaData() {
-    if (environment.production) {
-      const url = new URL(window.location.href);
-      let firstSegment = url.pathname.split('/')[1];
-      console.log(firstSegment);
-      fetch(`https://api-test.tappya.com/link/search?account=${firstSegment}`)
-        .then((res) => res.json())
-        .then((data: MetaData) => {
-          console.log('meta data', data);
-          this.metaData$.next(data);
-          this.getCategories(data.branches[0].menuUrl);
-        });
-    } else {
-      this.metaData$.next(fakeMetaData);
-      this.categories$.next(fakeCategoriesData);
-    }
+  getMetaData(segment: string) {
+    return new Promise((resolve, reject) => {
+      if (environment.production) {
+        fetch(`https://api-test.tappya.com/link/search?account=${segment}`)
+          .then((res) => res.json())
+          .then((data: MetaData) => {
+            console.log('meta data', data);
+            this.metaData$.next(data);
+            this.getCategories(data.branches[0].menuUrl);
+            resolve(true);
+          });
+      } else {
+        this.metaData$.next(fakeMetaData);
+        this.categories$.next(fakeCategoriesData);
+        resolve(true);
+      }
+    });
   }
 }

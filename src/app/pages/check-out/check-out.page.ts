@@ -16,9 +16,12 @@ import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { addIcons } from 'ionicons';
 import { arrowBackOutline, location } from 'ionicons/icons';
 import { Map } from 'maplibre-gl';
+import { CheckoutBody } from 'src/app/interfaces/checkout';
+import { CheckOutService } from 'src/app/services/check-out.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 import { style } from '../specify-location/specify-location.page';
 import { CartService } from './../../services/cart.service';
+import { HomePageService } from './../../services/home-page.service';
 import { LocationService } from './../../services/location.service';
 @Component({
   selector: 'app-check-out',
@@ -48,14 +51,33 @@ export class CheckOutPage implements OnInit {
   selectedSegment = 'apartment';
   cartSummary$ = this.cartService.cartSummary$;
   paymentSummary$ = this.cartService.paymentSummary$;
+  checkoutBody: CheckoutBody;
+  metadata$ = this.homePageService.metaData$;
+
   constructor(
+    private homePageService: HomePageService,
     private locationService: LocationService,
-    private cartService: CartService
+    private cartService: CartService,
+    private checkOutService: CheckOutService
   ) {
     addIcons({ arrowBackOutline, location });
   }
 
-  ngOnInit() {}
+  async ngOnInit() {}
+
+  placeOrder() {
+    const url = `https://api-test.tappa.com/branch/${this.metadata$.value.branches[0].id}/pos/${this.metadata$.value.branches[0].posId}/checkout/account?${this.metadata$.value.url}`;
+    this.checkoutBody = this.checkOutService.getCheckoutBody();
+    console.log(this.checkoutBody);
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(this.checkoutBody),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+      });
+  }
 
   onMapLoaded(event: Map) {
     this.map = event;
