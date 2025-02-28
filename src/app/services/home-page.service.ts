@@ -3,9 +3,6 @@ import { ToastController } from '@ionic/angular/standalone';
 import { BehaviorSubject } from 'rxjs';
 import { Category, Item } from 'src/app/interfaces/categories';
 import { Branch } from 'src/app/interfaces/metaData';
-import { environment } from 'src/environments/environment';
-import { fakeCategoriesData } from '../data/fakeCategoriesData';
-import { fakeMetaData } from '../data/fakeMetaData';
 import { MetaData } from '../interfaces/metaData';
 export type OrderType = 'delivery' | 'pickup' | null;
 
@@ -52,20 +49,14 @@ export class HomePageService {
 
   getMetaData(segment: string) {
     return new Promise((resolve, reject) => {
-      if (environment.production) {
-        fetch(`https://api-test.tappya.com/link/search?account=${segment}`)
-          .then((res) => res.json())
-          .then((data: MetaData) => {
-            console.log('meta data', data);
-            this.metaData$.next(data);
-            this.getCategories(data.branches[0].menuUrl);
-            resolve(true);
-          });
-      } else {
-        this.metaData$.next(fakeMetaData);
-        this.categories$.next(fakeCategoriesData);
-        resolve(true);
-      }
+      fetch(`https://api-test.tappya.com/link/search?account=${segment}`)
+        .then((res) => res.json())
+        .then((data: MetaData) => {
+          console.log('meta data', data);
+          this.metaData$.next(data);
+          this.getCategories(data.branches[0].menuUrl);
+          resolve(true);
+        });
     });
   }
 }

@@ -69,7 +69,7 @@ export class CheckOutPage implements OnInit {
   async ngOnInit() {}
 
   placeOrder() {
-    const url = `https://api-test.tappa.com/branch/${this.metadata$.value.branches[0].id}/pos/${this.metadata$.value.branches[0].posId}/create-order/account?${this.metadata$.value.url}`;
+    const url = `https://api-test.tappya.com/branch/${this.metadata$.value.branches[0].id}/pos/${this.metadata$.value.branches[0].posId}/create-order/account?=${this.metadata$.value.url}`;
     this.checkoutBody = this.checkOutService.getCheckoutBody();
     console.log(this.checkoutBody);
     fetch(url, {
