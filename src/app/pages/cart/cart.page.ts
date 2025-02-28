@@ -10,6 +10,7 @@ import {
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
 import { BehaviorSubject } from 'rxjs';
+import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { UserService } from 'src/app/services/user.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
@@ -48,10 +49,12 @@ export class CartPage {
   action: 'cta' | 'phone-verification' | 'otp' | 'name' = 'cta';
   phoneNumber$: BehaviorSubject<string> = this.userService.userPhoneNumber$;
   name$: BehaviorSubject<string> = this.userService.userName$;
+  restaurantName$ = this.appService.restaurantName$;
   constructor(
     private cartService: CartService,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private appService: AppService
   ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);
@@ -86,6 +89,6 @@ export class CartPage {
   continue() {
     console.log('continue');
 
-    this.router.navigate(['/new-address']);
+    this.router.navigate(['/', this.restaurantName$.value, 'new-address']);
   }
 }

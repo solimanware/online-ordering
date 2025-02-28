@@ -71,7 +71,7 @@
   </div>
   } @else {
   <div
-    [routerLink]="['/specify-location']"
+    [routerLink]="['/', (restaurantName$ | async), 'specify-location']"
     [queryParams]="{returnTo:returnTo}"
     class="choose-location flex items-start bg-blue-50 p-2 rounded-lg mt-2"
   >
@@ -167,7 +167,9 @@
     </div>
   </footer>
   } @if((paymentSummary$|async).itemsCount > 0) {
-  <app-cart-summry-cta routerLink="/cart"></app-cart-summry-cta>
+  <app-cart-summry-cta
+    [routerLink]="['/', (restaurantName$ | async), 'cart']"
+  ></app-cart-summry-cta>
   }
 </ion-content>
 

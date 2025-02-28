@@ -1,7 +1,7 @@
 import { AsyncPipe, NgStyle } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonIcon,
@@ -27,6 +27,7 @@ import { CartSummryCtaComponent } from 'src/app/components/cart-summry-cta/cart-
 import { ChoosePickupBranchActionSheetComponent } from 'src/app/components/choose-pickup-branch-action-sheet/choose-pickup-branch-action-sheet.component';
 import { Category, Item } from 'src/app/interfaces/categories';
 import { Branch, MetaData } from 'src/app/interfaces/metaData';
+import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService, OrderType } from 'src/app/services/home-page.service';
 import { UserType } from 'src/app/services/user.service';
@@ -77,11 +78,15 @@ export class HomePage {
     this.homePageService.shouldShowPickupActionSheet$;
   isPickupFlow$: BehaviorSubject<boolean> = this.homePageService.isPickupFlow$;
   returnTo: string = 'home';
+  restaurantName$ = this.appService.restaurantName$;
+
   constructor(
     private homePageService: HomePageService,
     private toastController: ToastController,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private route: ActivatedRoute,
+    private appService: AppService
   ) {
     addIcons({
       globeOutline,
@@ -126,9 +131,13 @@ export class HomePage {
     this.homePageService.selectedItem$.next(item);
     console.log(item);
     if (this.userLocation$.getValue()) {
-      this.router.navigate(['/item-detail']);
+      this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
     } else {
-      this.router.navigate(['/specify-location']);
+      this.router.navigate([
+        '/',
+        this.restaurantName$.value,
+        'specify-location',
+      ]);
     }
   }
 
@@ -141,7 +150,7 @@ export class HomePage {
       position: 'bottom',
       color: 'success',
     });
-    await toast.present();
+    // await toast.present();
   }
 
   itemChoosen() {
@@ -149,9 +158,13 @@ export class HomePage {
     const isLocationSet = this.homePageService.userLocation$.getValue();
     console.log(isLoggedIn, isLocationSet);
     if (isLocationSet) {
-      this.router.navigate(['/item-detail']);
+      this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
     } else {
-      this.router.navigate(['/specify-location']);
+      this.router.navigate([
+        '/',
+        this.restaurantName$.value,
+        'specify-location',
+      ]);
     }
   }
 

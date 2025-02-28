@@ -10,6 +10,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { Item, Modifier, Variant } from 'src/app/interfaces/categories';
+import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 
@@ -43,12 +44,13 @@ export interface ItemDetail extends Item {
 export class ItemDetailPage implements OnInit {
   quantity: number = 1;
   itemDetail: ItemDetail;
-
+  restaurantName$ = this.appService.restaurantName$;
   constructor(
     private toastController: ToastController,
     private homePageService: HomePageService,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private appService: AppService
   ) {}
 
   ngOnInit() {
@@ -210,7 +212,7 @@ export class ItemDetailPage implements OnInit {
       cssClass: 'custom-toast',
     });
 
-    toast.present();
-    this.router.navigate(['/home']);
+    // toast.present();
+    this.router.navigate(['/', this.restaurantName$.value, 'home']);
   }
 }

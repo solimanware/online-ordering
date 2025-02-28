@@ -31,6 +31,7 @@ import {
   storefrontOutline,
 } from 'ionicons/icons';
 import { Map } from 'maplibre-gl';
+import { AppService } from 'src/app/services/app.service';
 import { style } from '../specify-location/specify-location.page';
 import { LocationService } from './../../services/location.service';
 import { UserService } from './../../services/user.service';
@@ -73,6 +74,7 @@ export class NewAddressPage {
   zoomLevel: [number] = [12];
   mapCenter: [number, number] = [31.2357, 30.0444];
   selectedSegment = 'apartment';
+  restaurantName$ = this.appService.restaurantName$;
 
   addressForm: FormGroup = new FormGroup({
     buildingName: new FormControl(''),
@@ -86,7 +88,8 @@ export class NewAddressPage {
 
   constructor(
     private locationService: LocationService,
-    private userService: UserService
+    private userService: UserService,
+    private appService: AppService
   ) {
     addIcons({
       arrowBackOutline,

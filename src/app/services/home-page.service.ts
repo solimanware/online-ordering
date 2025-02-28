@@ -37,7 +37,7 @@ export class HomePageService {
         position: 'bottom',
         color: 'success',
       });
-      toast.present();
+      // toast.present();
     }, 1000);
   }
 

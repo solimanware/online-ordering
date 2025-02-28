@@ -17,6 +17,7 @@ import {
 } from 'ionicons/icons';
 import { Map } from 'maplibre-gl';
 import { Observable, Subscriber } from 'rxjs';
+import { AppService } from 'src/app/services/app.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 
 const awsRegion = 'eu-west-1';
@@ -46,10 +47,11 @@ export class SpecifyLocationPage {
   mapCenter: [number, number] = [30.0444, 31.2357];
   map: Map;
   returnTo: string = 'item-detail';
-
+  restaurantName$ = this.appService.restaurantName$;
   constructor(
     private homePageService: HomePageService,
-    private router: Router
+    private router: Router,
+    private appService: AppService
   ) {
     addIcons({ arrowBackOutline, searchOutline, locationOutline, location });
     this.router.events.subscribe((event) => {
@@ -74,9 +76,9 @@ export class SpecifyLocationPage {
       this.homePageService.metaData$.value.branches[0]
     );
     if (this.returnTo === 'home') {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/', this.restaurantName$.value, 'home']);
     } else if (this.returnTo === 'item-detail') {
-      this.router.navigate(['/item-detail']);
+      this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
       this.homePageService.userLocation$.next([
         this.mapCenter[0],
         this.mapCenter[1],

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { HomePageService } from 'src/app/services/home-page.service';
+import { AppService } from './services/app.service';
 
 @Component({
   selector: 'app-root',
@@ -12,15 +13,18 @@ import { HomePageService } from 'src/app/services/home-page.service';
 export class AppComponent {
   constructor(
     private router: Router,
-    private homePageService: HomePageService
+    private homePageService: HomePageService,
+    private appService: AppService
   ) {
     const path = window.location.pathname;
-    const firstSegment = path.split('/')[1];
-    console.log(firstSegment);
-    if (firstSegment) {
-      this.homePageService.getMetaData(firstSegment).then(() => {
+    const segments = path.split('/').filter((segment) => segment);
+    const restaurantName = segments[0];
+
+    if (restaurantName) {
+      this.appService.restaurantName$.next(restaurantName);
+      this.homePageService.getMetaData(restaurantName).then(() => {
         console.log('meta data', this.homePageService.metaData$.value);
-        this.router.navigate(['/home']);
+        this.router.navigate([`/${restaurantName}/home`]);
       });
     }
   }
