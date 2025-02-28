@@ -1,34 +1,36 @@
 export interface CheckoutBody {
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  deliveryAddress: string;
-  paymentMethod: string;
+  customerId: string;
+  type: string;
+  deliveryType: string;
+  timestamp: string;
+  preferredTime: PreferredTime;
+  deliveryAddressId: string;
+  mobileNumber: string;
+  currency: string;
+  pushNotificationToken: string;
+  deliveryAddress: DeliveryAddress;
   orderItems: OrderItem[];
-  totalAmount: number;
-  deliveryFee: number;
-  specialInstructions?: string;
-}
-
-export interface OrderItem {
-  itemId: string;
-  quantity: number;
-  price: number;
-  name: string;
+  payment: Payment;
+  orderNote: string;
+  subtotal: number;
+  shippingCost: number;
+  discountAmount: number;
+  taxAmount: number;
+  total: number;
 }
 
 export interface PreferredTime {
-  name: any;
-  time: any;
+  name: string;
+  time: string;
 }
 
 export interface DeliveryAddress {
-  phoneNumber: any;
+  phoneNumber: string;
   street: string;
-  street2: any;
+  street2: string;
   city: string;
   state: string;
-  postalCode: any;
+  postalCode: string;
   building: string;
   landmark: string;
   flatNumber: string;
@@ -41,6 +43,15 @@ export interface DeliveryAddress {
 export interface Coordinates {
   latitude: number;
   longitude: number;
+}
+
+export interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  variantCategoryIds: VariantCategoryId[];
+  modifierCategoryIds: any[];
+  note: string;
 }
 
 export interface VariantCategoryId {
@@ -62,5 +73,5 @@ export interface Payment {
 export interface Settlement {
   method: string;
   amount: number;
-  reference: any;
+  reference: string;
 }
