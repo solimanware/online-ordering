@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -61,7 +61,8 @@ export class CheckOutPage implements OnInit {
     private locationService: LocationService,
     private cartService: CartService,
     private checkOutService: CheckOutService,
-    private appService: AppService
+    private appService: AppService,
+    private router: Router
   ) {
     addIcons({ arrowBackOutline, location });
   }
@@ -79,6 +80,12 @@ export class CheckOutPage implements OnInit {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
+        this.router.navigate([
+          '/',
+          this.restaurantName$.value,
+          'order-tracking',
+          data.order,
+        ]);
       });
   }
 

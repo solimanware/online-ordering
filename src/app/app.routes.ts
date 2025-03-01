@@ -43,7 +43,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'order-tracking',
+        path: 'order-tracking/:orderId',
         loadComponent: () =>
           import('./pages/order-tracking/order-tracking.page').then(
             (m) => m.OrderTrackingPage
