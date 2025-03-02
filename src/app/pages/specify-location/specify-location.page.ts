@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { Location } from '@aws-sdk/client-location';
 import {
   IonHeader,
   IonIcon,
@@ -48,6 +49,17 @@ export class SpecifyLocationPage {
   map: Map;
   returnTo: string = 'item-detail';
   restaurantName$ = this.appService.restaurantName$;
+  searchResults: any[] = [];
+  searchText: string = '';
+
+  private locationClient = new Location({
+    region: awsRegion,
+    credentials: {
+      accessKeyId: 'AKIA2YICAPKI7G2F5C7O',
+      secretAccessKey: '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',
+    },
+  });
+
   constructor(
     private homePageService: HomePageService,
     private router: Router,
@@ -124,5 +136,45 @@ export class SpecifyLocationPage {
         position.longitude,
       ]);
     });
+  }
+
+  async searchAddress(event: any) {
+    const searchText = event.target.value;
+    this.searchText = searchText;
+
+    if (searchText.length < 3) {
+      this.searchResults = [];
+      return;
+    }
+
+    try {
+      const params = {
+        IndexName: 'explore.place',
+        Text: searchText,
+        BiasPosition: this.mapCenter,
+        MaxResults: 5,
+      };
+
+      const response = await this.locationClient.searchPlaceIndexForText(
+        params
+      );
+      this.searchResults = response.Results || [];
+    } catch (error) {
+      console.error('Error searching addresses:', error);
+      this.searchResults = [];
+    }
+  }
+
+  selectAddress(result: any) {
+    const coordinates = result.Place.Geometry.Point;
+    this.map.flyTo({
+      center: coordinates,
+      zoom: 15,
+    });
+
+    this.homePageService.userLocation$.next([coordinates[1], coordinates[0]]);
+
+    this.searchResults = [];
+    this.searchText = result.Place.Label;
   }
 }

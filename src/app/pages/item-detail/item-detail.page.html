@@ -16,6 +16,7 @@
 </ion-header>
 
 <ion-content>
+  <h1>hi</h1>
   <div class="mt-8"></div>
   <div class="item-image h-72 w-72 mx-auto">
     <img
@@ -61,36 +62,77 @@
         </div>
       </div>
     </div>
-    } @if (itemDetail?.modifierCategories?.length > 0) {
+    }@for (modifierCategory of itemDetail?.modifierCategories; track $index) {
     <div class="extras mt-6">
-      <h2 class="text-lg font-semibold mb-3">Extras</h2>
-      <div class="grid grid-cols-3 gap-4">
-        <div
-          *ngFor="let modifier of itemDetail?.modifierCategories[0]?.modifiers"
-          class="flex flex-col items-center p-3 rounded-xl border border-gray-200 cursor-pointer relative"
-          [class.border-red-600]="itemDetail?.selectedModifierId === modifier?.id"
-          (click)="selectModifier(modifier)"
-        >
-          @if (itemDetail?.selectedModifierId === modifier?.id) {
-          <div
-            class="absolute top-2 right-2 w-3 h-3 bg-red-600 rounded-sm"
-          ></div>
-          } @else {
-          <div
-            class="absolute top-2 right-2 w-3 h-3 border-gray-800 border rounded-sm"
-          ></div>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">{{modifierCategory?.name?.en}}</h2>
+        <div class="flex items-center gap-2">
+          @if (modifierCategory?.minSelection > 0) {
+          <span class="text-red-600 text-sm">Required</span>
           }
-
-          <img
-            src="assets/images/tomato.jpeg"
-            [alt]="modifier.name.en"
-            class="w-16 h-16 object-cover rounded-lg mb-2"
-          />
-          <span class="text-sm font-medium">{{modifier?.name?.en}}</span>
-          <span class="text-xs text-gray-600 mt-1"
-            >+{{modifier?.price?.amount}} {{modifier?.price?.currency}}</span
-          >
+          <span class="text-sm text-gray-600">
+            (Select {{modifierCategory?.minSelection}} -
+            {{modifierCategory?.maxSelection}})
+          </span>
         </div>
+      </div>
+      <div class="flex flex-col gap-3">
+        @for (modifier of modifierCategory?.modifiers; track $index) {
+        <div
+          class="flex items-center p-3 rounded-xl border border-gray-200 text-left cursor-pointer transition-all"
+          [class.border-red-600]="isModifierSelected(modifier.id)"
+          (click)="toggleModifier(modifier, modifierCategory)"
+        >
+          <!-- Selection indicator -->
+          <div class="flex items-center justify-center w-6 h-6 mr-3">
+            @if (modifierCategory.isMultiSelect === false) {
+            <div
+              class="w-4 h-4 rounded-full border-2"
+              [class.bg-red-600]="isModifierSelected(modifier.id)"
+              [class.border-red-600]="isModifierSelected(modifier.id)"
+              [class.border-gray-300]="!isModifierSelected(modifier.id)"
+            ></div>
+            } @else {
+            <div
+              class="w-4 h-4 rounded border-2"
+              [class.bg-red-600]="isModifierSelected(modifier.id)"
+              [class.border-red-600]="isModifierSelected(modifier.id)"
+              [class.border-gray-300]="!isModifierSelected(modifier.id)"
+            ></div>
+            }
+          </div>
+
+          <!-- Modifier info -->
+          <div class="flex-1">
+            <p class="font-medium">{{modifier?.name?.en}}</p>
+            <p class="text-sm text-gray-600">
+              {{modifier?.price?.amount}} {{modifier?.price?.currency}}
+            </p>
+          </div>
+
+          <!-- Quantity controls -->
+          @if (isModifierSelected(modifier.id) &&
+          modifierCategory.isMultiSelect) {
+          <div class="flex items-center gap-2">
+            <button
+              class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center"
+              (click)="decrementModifierQuantity($event, modifier, modifierCategory)"
+            >
+              -
+            </button>
+            <span class="w-6 text-center"
+              >{{getModifierQuantity(modifier.id)}}</span
+            >
+            <button
+              class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center"
+              (click)="incrementModifierQuantity($event, modifier, modifierCategory)"
+            >
+              +
+            </button>
+          </div>
+          }
+        </div>
+        }
       </div>
     </div>
     }
@@ -125,7 +167,7 @@
       >
         Add Item
         <div class="w-10"></div>
-        {{itemDetail?.totalPrice}} {{itemDetail?.price?.currency}}
+        {{itemDetail?.totalPrice}} {{itemDetail?.currency}}
       </div>
     </div>
   </div>

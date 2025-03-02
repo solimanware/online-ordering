@@ -25,21 +25,44 @@ export interface Item {
   sequence: string;
   fromTime: string;
   toTime: string;
-  product_id: string;
+  itemId: string;
   barcode: string;
-  name: NameClass;
+  name: Name;
   code: string;
-  description: NameClass;
+  description: Description;
   calories: number;
   tags: any[];
   uom: string;
   preparationTime: number;
   imageUrl: string;
-  taxIds: TaxID[];
+  taxIds: TaxId[];
   outOfStock: boolean;
   variantCategories: VariantCategory[];
   modifierCategories: ModifierCategory[];
   price: Price;
+  selectedModifierId: string;
+  selectedVariantId: string;
+  totalPrice: number;
+  quantity: number;
+  subtotal: number;
+  total: number;
+  currency: string;
+}
+
+export interface Name {
+  ar: string;
+  en: string;
+}
+
+export interface Description {
+  ar: string;
+  en: string;
+}
+
+export interface TaxId {
+  id: string;
+  rate: number;
+  priceIncluded: boolean;
 }
 
 export enum Barcode {
@@ -68,6 +91,7 @@ export interface ModifierCategory {
   name: NameClass;
   description: NameClass;
   isMultiSelect: boolean;
+  selectionType: 'SINGLE' | 'MULTIPLE';
   allowRepeatedSelection: boolean;
   maxSelection: number;
   minSelection: number;

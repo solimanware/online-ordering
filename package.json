@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
+    "@aws-sdk/client-location": "^3.758.0",
     "@aws/amazon-location-utilities-auth-helper": "^1.2.1",
     "@capacitor/app": "7.0.0",
     "@capacitor/core": "7.0.1",

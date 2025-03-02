@@ -9,13 +9,28 @@ import {
   IonIcon,
   ToastController,
 } from '@ionic/angular/standalone';
-import { Item, Modifier, Variant } from 'src/app/interfaces/categories';
+import {
+  Item,
+  Modifier,
+  ModifierCategory,
+  Variant,
+} from 'src/app/interfaces/categories';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 
+interface SelectedModifier {
+  id: string;
+  quantity: number;
+}
+
+interface ModifierValidation {
+  isValid: boolean;
+  message?: string;
+}
+
 export interface ItemDetail extends Item {
-  selectedModifierId: string;
+  selectedModifiers: SelectedModifier[];
   selectedVariantId: string;
   totalPrice: number;
   quantity: number;
@@ -23,7 +38,6 @@ export interface ItemDetail extends Item {
   total: number;
   tax?: number;
   serviceFee?: number;
-  currency?: string;
 }
 
 @Component({
@@ -57,9 +71,7 @@ export class ItemDetailPage implements OnInit {
     this.homePageService.selectedItem$.subscribe((item) => {
       this.itemDetail = {
         ...item,
-        selectedModifierId: item?.modifierCategories?.length
-          ? item.modifierCategories[0]?.modifiers[0]?.id
-          : '',
+        selectedModifiers: [],
         selectedVariantId: item?.variantCategories?.length
           ? item.variantCategories[0]?.variants[0]?.id
           : '',
@@ -68,14 +80,13 @@ export class ItemDetailPage implements OnInit {
         subtotal: 0,
         total: 0,
       };
-      console.log(this.itemDetail);
       this.calculateTotalPrice(this.itemDetail);
     });
   }
 
   calculateTotalPrice(itemDetail: ItemDetail) {
     let variantPrice = 0;
-    let modifierPrice = 0;
+    let modifiersPrice = 0;
 
     // Get base price from the item
     const basePrice = itemDetail.price?.amount || 0;
@@ -91,25 +102,23 @@ export class ItemDetailPage implements OnInit {
       variantPrice = selectedVariant?.price?.amount || 0;
     }
 
-    // Calculate modifier price if selected
-    if (
-      itemDetail.selectedModifierId &&
-      itemDetail.modifierCategories?.length > 0
-    ) {
-      const selectedModifier = itemDetail.modifierCategories[0].modifiers.find(
-        (m) => m.id === itemDetail.selectedModifierId
+    // Calculate total modifiers price
+    if (itemDetail.modifierCategories?.length > 0) {
+      modifiersPrice = itemDetail.selectedModifiers.reduce(
+        (total, selected) => {
+          const modifier = this.findModifierById(selected.id);
+          return total + (modifier?.price?.amount || 0) * selected.quantity;
+        },
+        0
       );
-      modifierPrice = selectedModifier?.price?.amount || 0;
     }
 
     // Calculate final price
     const finalBasePrice = variantPrice > 0 ? variantPrice : basePrice;
-    const totalBeforeQuantity = finalBasePrice + modifierPrice;
+    const totalBeforeQuantity = finalBasePrice + modifiersPrice;
 
-    // Set total price with quantity
+    // Update prices
     this.itemDetail.totalPrice = totalBeforeQuantity * this.quantity;
-
-    // Update other price-related fields
     this.itemDetail.quantity = this.quantity;
     this.itemDetail.subtotal = this.itemDetail.totalPrice;
     this.itemDetail.total = this.itemDetail.totalPrice;
@@ -121,10 +130,138 @@ export class ItemDetailPage implements OnInit {
     console.log('Price calculation:', {
       basePrice,
       variantPrice,
-      modifierPrice,
+      modifiersPrice,
       quantity: this.quantity,
       totalPrice: this.itemDetail.totalPrice,
     });
+  }
+
+  findModifierById(modifierId: string): Modifier | undefined {
+    for (const category of this.itemDetail.modifierCategories || []) {
+      const modifier = category.modifiers.find((m) => m.id === modifierId);
+      if (modifier) return modifier;
+    }
+    return undefined;
+  }
+
+  toggleModifier(modifier: Modifier, category: ModifierCategory) {
+    const isSelected = this.isModifierSelected(modifier.id);
+
+    if (isSelected) {
+      // Handle deselection
+      if (category.minSelection > 0) {
+        const currentSelections = this.getCurrentSelectionsCount(category);
+        if (currentSelections <= category.minSelection) {
+          this.showToast(
+            `You must select at least ${category.minSelection} ${category.name.en}`
+          );
+          return;
+        }
+      }
+      this.itemDetail.selectedModifiers =
+        this.itemDetail.selectedModifiers.filter((m) => m.id !== modifier.id);
+    } else {
+      // Handle selection
+      const validationResult = this.validateModifierSelection(
+        modifier,
+        category
+      );
+      if (!validationResult.isValid) {
+        this.showToast(validationResult.message);
+        return;
+      }
+
+      if (!category.isMultiSelect) {
+        // Remove any existing selection in this category for single select
+        this.itemDetail.selectedModifiers =
+          this.itemDetail.selectedModifiers.filter(
+            (m) => !category.modifiers.some((mod) => mod.id === m.id)
+          );
+      }
+
+      this.itemDetail.selectedModifiers.push({
+        id: modifier.id,
+        quantity: 1,
+      });
+    }
+
+    this.calculateTotalPrice(this.itemDetail);
+  }
+
+  validateModifierSelection(
+    modifier: Modifier,
+    category: ModifierCategory
+  ): ModifierValidation {
+    const currentSelections = this.getCurrentSelectionsCount(category);
+
+    if (currentSelections >= category.maxSelection) {
+      return {
+        isValid: false,
+        message: `You can only select up to ${category.maxSelection} items from ${category.name.en}`,
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  getCurrentSelectionsCount(category: ModifierCategory): number {
+    return this.itemDetail.selectedModifiers
+      .filter((selected) =>
+        category.modifiers.some((m) => m.id === selected.id)
+      )
+      .reduce((total, modifier) => total + modifier.quantity, 0);
+  }
+
+  incrementModifierQuantity(
+    event: Event,
+    modifier: Modifier,
+    category: ModifierCategory
+  ) {
+    event.stopPropagation();
+    const selectedModifier = this.itemDetail.selectedModifiers.find(
+      (m) => m.id === modifier.id
+    );
+    if (!selectedModifier) return;
+
+    const currentTotal = this.getCurrentSelectionsCount(category);
+    if (currentTotal >= category.maxSelection) {
+      this.showToast(
+        `You can only select up to ${category.maxSelection} items from ${category.name.en}`
+      );
+      return;
+    }
+
+    selectedModifier.quantity += 1;
+    this.calculateTotalPrice(this.itemDetail);
+  }
+
+  decrementModifierQuantity(
+    event: Event,
+    modifier: Modifier,
+    category: ModifierCategory
+  ) {
+    event.stopPropagation();
+    const selectedModifier = this.itemDetail.selectedModifiers.find(
+      (m) => m.id === modifier.id
+    );
+    if (!selectedModifier) return;
+
+    if (selectedModifier.quantity <= 1) {
+      this.toggleModifier(modifier, category);
+    } else {
+      selectedModifier.quantity -= 1;
+      this.calculateTotalPrice(this.itemDetail);
+    }
+  }
+
+  async showToast(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom',
+      color: 'warning',
+    });
+    toast.present();
   }
 
   selectVariant(variant: Variant) {
@@ -133,10 +270,15 @@ export class ItemDetailPage implements OnInit {
     this.calculateTotalPrice(this.itemDetail);
   }
 
-  selectModifier(modifier: Modifier) {
-    this.itemDetail.selectedModifierId = modifier.id;
-    this.itemDetail.totalPrice = modifier.price.amount;
-    this.calculateTotalPrice(this.itemDetail);
+  isModifierSelected(modifierId: string): boolean {
+    return this.itemDetail.selectedModifiers.some((m) => m.id === modifierId);
+  }
+
+  getModifierQuantity(modifierId: string): number {
+    const selectedModifier = this.itemDetail.selectedModifiers.find(
+      (m) => m.id === modifierId
+    );
+    return selectedModifier?.quantity || 0;
   }
 
   incrementQuantity() {
@@ -162,6 +304,17 @@ export class ItemDetailPage implements OnInit {
   // }
 
   async addToCart() {
+    // Validate minimum selections before adding to cart
+    for (const category of this.itemDetail.modifierCategories || []) {
+      const currentSelections = this.getCurrentSelectionsCount(category);
+      if (currentSelections < category.minSelection) {
+        this.showToast(
+          `Please select at least ${category.minSelection} ${category.name.en}`
+        );
+        return;
+      }
+    }
+
     // Make sure item has all necessary price information before adding to cart
     this.calculateTotalPrice(this.itemDetail);
 
@@ -172,7 +325,7 @@ export class ItemDetailPage implements OnInit {
       sequence: this.itemDetail.sequence,
       fromTime: this.itemDetail.fromTime,
       toTime: this.itemDetail.toTime,
-      product_id: this.itemDetail.product_id,
+      itemId: this.itemDetail.itemId,
       barcode: this.itemDetail.barcode,
       name: this.itemDetail.name,
       code: this.itemDetail.code,
@@ -187,7 +340,7 @@ export class ItemDetailPage implements OnInit {
       variantCategories: this.itemDetail.variantCategories,
       modifierCategories: this.itemDetail.modifierCategories,
       price: this.itemDetail.price,
-      selectedModifierId: this.itemDetail.selectedModifierId,
+      selectedModifiers: this.itemDetail.selectedModifiers,
       selectedVariantId: this.itemDetail.selectedVariantId,
       totalPrice: this.itemDetail.totalPrice,
       quantity: this.quantity,
