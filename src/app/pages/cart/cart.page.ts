@@ -73,6 +73,14 @@ export class CartPage {
   async sendWhatsAppOTP(phoneNumber: string) {
     // Implement your WhatsApp OTP sending logic here
     console.log('Sending OTP to:', phoneNumber);
+    this.phoneNumber$.next(phoneNumber);
+    fetch(
+      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=2${phoneNumber}`
+    )
+      .then((res) => res.text())
+      .then((data) => {
+        console.log(data);
+      });
     this.action = 'otp';
   }
   // this called every time when user changed the code
@@ -83,6 +91,16 @@ export class CartPage {
 
   async verifyOTP(otp: string) {
     // Implement your OTP verification logic here
+    fetch(
+      `https://api-test.tappya.com/auth/otp/verify?account=${this.appService.restaurantName$.value}&mobile=2${phoneNumber}&code=${otp}`,
+      {
+        method: 'POST',
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      });
     console.log('Verifying OTP:', otp);
     this.action = 'name';
   }
