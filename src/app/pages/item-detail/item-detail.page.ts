@@ -9,6 +9,8 @@ import {
   IonIcon,
   ToastController,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
 import {
   Item,
   Modifier,
@@ -65,7 +67,11 @@ export class ItemDetailPage implements OnInit {
     private cartService: CartService,
     private router: Router,
     private appService: AppService
-  ) {}
+  ) {
+    addIcons({
+      closeOutline,
+    });
+  }
 
   ngOnInit() {
     this.homePageService.selectedItem$.subscribe((item) => {
@@ -246,12 +252,15 @@ export class ItemDetailPage implements OnInit {
     );
     if (!selectedModifier) return;
 
-    if (selectedModifier.quantity <= 1) {
-      this.toggleModifier(modifier, category);
+    if (selectedModifier.quantity === 1) {
+      // Remove the modifier directly instead of using toggleModifier
+      this.itemDetail.selectedModifiers =
+        this.itemDetail.selectedModifiers.filter((m) => m.id !== modifier.id);
     } else {
       selectedModifier.quantity -= 1;
-      this.calculateTotalPrice(this.itemDetail);
     }
+
+    this.calculateTotalPrice(this.itemDetail);
   }
 
   async showToast(message: string) {

@@ -6,7 +6,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -31,7 +31,9 @@ import {
   storefrontOutline,
 } from 'ionicons/icons';
 import { Map } from 'maplibre-gl';
+import { Address, Customer } from 'src/app/interfaces/customer';
 import { AppService } from 'src/app/services/app.service';
+import { CustomerService } from 'src/app/services/customer.service';
 import { style } from '../specify-location/specify-location.page';
 import { LocationService } from './../../services/location.service';
 import { UserService } from './../../services/user.service';
@@ -89,7 +91,9 @@ export class NewAddressPage {
   constructor(
     private locationService: LocationService,
     private userService: UserService,
-    private appService: AppService
+    private appService: AppService,
+    private router: Router,
+    private customerService: CustomerService
   ) {
     addIcons({
       arrowBackOutline,
@@ -101,6 +105,16 @@ export class NewAddressPage {
       homeOutline,
       businessOutline,
       libraryOutline,
+    });
+    this.userService.userPhoneNumber$.subscribe((phoneNumber) => {
+      this.addressForm.patchValue({
+        phoneNumber: phoneNumber,
+      });
+    });
+    this.userService.userName$.subscribe((name) => {
+      this.addressForm.patchValue({
+        name: name,
+      });
     });
     console.log('user phone number', this.userService.userPhoneNumber$.value);
   }
@@ -119,7 +133,49 @@ export class NewAddressPage {
   }
 
   saveAddress() {
+    const address: Address = {
+      name: this.addressForm.value.name,
+      street: '',
+      street2: '',
+      city: 'Cairo',
+      state: '',
+      postalCode: '',
+      building: this.addressForm.value.buildingName,
+      floor: '',
+      flat: '',
+      landmark: '',
+      country: 'Egypt',
+      coordinates: {
+        latitude: 0,
+        longitude: 0,
+      },
+      type: 'residential',
+    };
+    const customer: Customer = {
+      name: this.addressForm.value.name,
+      email: this.addressForm.value.email,
+      mobile: this.addressForm.value.phoneNumber,
+      addresses: [address],
+      customerType: 'individual',
+      status: 'active',
+      notes: '',
+    };
     console.log('Address form data:', this.addressForm);
-    // Add your save logic here
+    fetch(
+      `https://api-test.tappya.com/customer/create-customer?account=${this.restaurantName$.value}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(customer),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        this.customerService.customerId$.next(data.data);
+        this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
+      })
+      .catch((error) => {
+        console.error('Error saving address:', error);
+      });
   }
 }

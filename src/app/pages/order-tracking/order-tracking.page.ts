@@ -1,24 +1,30 @@
 import { CommonModule } from '@angular/common';
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { arrowBackOutline, checkmarkOutline } from 'ionicons/icons';
 import { AnimationItem } from 'lottie-web';
 import { LottieComponent } from 'ngx-lottie';
+import { AppService } from 'src/app/services/app.service';
+import { HomePageService } from 'src/app/services/home-page.service';
 
 type OrderStatus =
-  | 'order-received'
-  | 'order-preparing'
-  | 'picked-up'
-  | 'arriving-soon';
+  | 'Accepted By Branch'
+  | 'Preparing'
+  | 'In Delivery'
+  | 'Delivered';
 
 interface OrderStep {
-  title: string;
+  title: OrderStatus;
   time?: string;
   status: 'completed' | 'current' | 'pending';
-  animation: OrderStatus;
+  animation:
+    | 'order-received'
+    | 'order-preparing'
+    | 'picked-up'
+    | 'arriving-soon';
 }
 
 @Component({
@@ -36,68 +42,121 @@ interface OrderStep {
     LottieComponent,
   ],
 })
-export class OrderTrackingPage implements OnInit {
-  status: OrderStatus = 'order-received';
+export class OrderTrackingPage implements OnInit, OnDestroy {
+  status: OrderStatus = 'Accepted By Branch';
   orderSteps: OrderStep[] = [
     {
-      title: 'Your order has been received',
+      title: 'Accepted By Branch',
       time: '10.00AM',
       status: 'completed',
       animation: 'order-received',
     },
     {
-      title: 'The restaurant is preparing your food',
+      title: 'Preparing',
       status: 'current',
       animation: 'order-preparing',
     },
     {
-      title: 'Your order has been picked up for delivery',
+      title: 'In Delivery',
       status: 'pending',
       animation: 'picked-up',
     },
     {
-      title: 'Order arriving soon!',
+      title: 'Delivered',
       status: 'pending',
       animation: 'arriving-soon',
     },
   ];
 
-  nextStep() {
-    const currentIndex = this.orderSteps.findIndex(
-      (step) => step.status === 'current'
-    );
-
-    // Guard clause for invalid index or if already at the end
-    if (currentIndex === -1) {
-      return;
+  nextStep(step: OrderStep) {
+    switch (step.title) {
+      case 'Accepted By Branch':
+        this.orderSteps[0].status = 'completed';
+        this.orderSteps[1].status = 'current';
+        this.options = {
+          ...this.options,
+          path: `/assets/animations/${this.orderSteps[0].animation}.json`,
+        };
+        break;
+      case 'Preparing':
+        this.orderSteps[1].status = 'completed';
+        this.orderSteps[2].status = 'current';
+        this.options = {
+          ...this.options,
+          path: `/assets/animations/${this.orderSteps[1].animation}.json`,
+        };
+        break;
+      case 'In Delivery':
+        this.orderSteps[2].status = 'completed';
+        this.orderSteps[3].status = 'current';
+        this.options = {
+          ...this.options,
+          path: `/assets/animations/${this.orderSteps[2].animation}.json`,
+        };
+        break;
+      case 'Delivered':
+        this.orderSteps[3].status = 'completed';
+        this.options = {
+          ...this.options,
+          path: `/assets/animations/${this.orderSteps[3].animation}.json`,
+        };
+        break;
     }
-
-    console.log('currentIndex', currentIndex);
-
-    // Mark current step as completed
-    this.orderSteps[currentIndex].status = 'completed';
-
-    // If there's a next step, mark it as current
-    if (currentIndex < this.orderSteps.length - 1) {
-      this.orderSteps[currentIndex + 1].status = 'current';
-    }
-    this.status = this.orderSteps[currentIndex].animation;
-
-    this.options = {
-      ...this.options,
-      path: `/assets/animations/${this.status}.json`,
-    };
-    console.log(this.options);
   }
 
-  constructor(private ngZone: NgZone) {
+  constructor(
+    private homePageService: HomePageService,
+    private appService: AppService,
+    private router: Router
+  ) {
     addIcons({ arrowBackOutline, checkmarkOutline });
   }
+  pollInterval: any;
 
-  ngOnInit() {}
+  ngOnInit() {
+    // Get initial order status
+    const branchId = this.homePageService.metaData$.value?.branches[0].id; // Get from route params or service
+    const posId = this.homePageService.metaData$.value?.branches[0].posId; // Get from route params or service
+    const accountId = this.appService.restaurantName$.value; // Get from route params or service
+    const orderId = this.router.url.split('/').pop(); // Get from route params or service
+
+    console.log(branchId, posId, accountId, orderId);
+    // Poll order status every 30 seconds
+    this.pollInterval = setInterval(() => {
+      fetch(
+        `https://api-test.tappya.com/branch/${branchId}/pos/${posId}/get-order-status?account=${accountId}&orderId=${orderId}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          // Update order status based on response
+          console.log('Order status:', data);
+          switch (data.message) {
+            case 'accepted':
+              this.nextStep(this.orderSteps[0]);
+              break;
+            case 'preparing':
+              this.nextStep(this.orderSteps[1]);
+              break;
+            case 'in_delivery':
+              this.nextStep(this.orderSteps[2]);
+              break;
+            case 'delivered':
+              this.nextStep(this.orderSteps[3]);
+              break;
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching order status:', err);
+        });
+    }, 10000);
+  }
+
+  ngOnDestroy = () => {
+    clearInterval(this.pollInterval);
+  };
 
   options = {
-    path: `/assets/animations/${this.status}.json`, // Update this path to your animation file
+    path: `/assets/animations/${this.orderSteps[0].animation}.json`, // Update this path to your animation file
     loop: true,
     autoplay: true,
   };

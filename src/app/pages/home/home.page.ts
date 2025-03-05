@@ -107,6 +107,7 @@ export class HomePage {
 
   ionWillEnter() {
     this.homePageService.isUserLoggedIn$.next(true);
+    this.orderType$.next('delivery');
     console.log(this.userLocation$.getValue());
 
     if (this.userLocation$.getValue()) {

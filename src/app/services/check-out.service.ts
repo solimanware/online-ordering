@@ -1,7 +1,20 @@
 import { Injectable } from '@angular/core';
 import { CheckoutBody } from '../interfaces/checkout';
 import { CartService } from './cart.service';
+import { CustomerService } from './customer.service';
 import { UserService } from './user.service';
+
+export interface ModifierCategoryId {
+  id: string;
+  items: Item[];
+}
+
+export interface Item {
+  id: string;
+  quantity: number;
+  price: number;
+  taxIds: string[];
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -11,12 +24,36 @@ export class CheckOutService {
 
   constructor(
     private userService: UserService,
-    private cartService: CartService
+    private cartService: CartService,
+    private customerService: CustomerService
   ) {}
 
   getCheckoutBody() {
+    //get all modifier categories and then add the modifier quantity to the items
+    const modifierCategoryIds: ModifierCategoryId[] = [];
+    for (const item of this.cartService.cartSummary$.value) {
+      for (const modifierCategory of item.item.modifierCategories) {
+        for (const modifier of modifierCategory.modifiers) {
+          for (const a of item.item.selectedModifiers) {
+            if (a.id === modifier.id) {
+              modifierCategoryIds.push({
+                id: modifierCategory.id,
+                items: [
+                  {
+                    id: modifier.id,
+                    quantity: a.quantity || 0,
+                    price: Number(modifier.price) || 0,
+                    taxIds: modifier.taxIds.map((tax) => tax.id),
+                  },
+                ],
+              });
+            }
+          }
+        }
+      }
+    }
     this.checkoutBody = {
-      customerId: '86100',
+      customerId: this.customerService.customerId$.value,
       type: 'delivery',
       deliveryType: 'delivery',
       timestamp: new Date().toISOString(),
@@ -24,7 +61,7 @@ export class CheckOutService {
         name: '',
         time: '',
       },
-      deliveryAddressId: '86100',
+      deliveryAddressId: this.customerService.customerId$.value,
       mobileNumber: this.userService.userPhoneNumber$.value,
       currency: 'EGP',
       pushNotificationToken: '',
@@ -57,9 +94,7 @@ export class CheckOutService {
             price: Number(variantItem.price) || 0,
           })),
         })),
-        modifierCategoryIds: item.item.modifierCategories.map((modifier) => ({
-          id: modifier.id,
-        })),
+        modifierCategoryIds: modifierCategoryIds,
         note: 'Take care',
       })),
       payment: {

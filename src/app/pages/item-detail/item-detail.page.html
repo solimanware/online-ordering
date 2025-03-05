@@ -33,7 +33,9 @@
     @if (itemDetail?.variantCategories?.length > 0) {
     <div class="size-selection mt-6">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold">Choose Size</h2>
+        <h2 class="text-lg font-semibold">
+          {{itemDetail?.variantCategories[0]?.name?.en}}
+        </h2>
         <button class="bg-red-600 px-4 py-1 rounded-lg text-white text-sm">
           Required
         </button>
@@ -69,10 +71,14 @@
         <div class="flex items-center gap-2">
           @if (modifierCategory?.minSelection > 0) {
           <span class="text-red-600 text-sm">Required</span>
+          } @else {
+          <span class="text-gray-600 text-sm">Optional</span>
           }
           <span class="text-sm text-gray-600">
-            (Select {{modifierCategory?.minSelection}} -
-            {{modifierCategory?.maxSelection}})
+            @if(modifierCategory?.minSelection > 0) {
+            min.{{modifierCategory?.minSelection}} - }
+            @if(modifierCategory?.maxSelection > 0) {
+            max.{{modifierCategory?.maxSelection}} }
           </span>
         </div>
       </div>

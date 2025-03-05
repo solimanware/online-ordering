@@ -7,6 +7,7 @@ import {
   IonFooter,
   IonHeader,
   IonIcon,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
 import { BehaviorSubject } from 'rxjs';
@@ -50,11 +51,13 @@ export class CartPage {
   phoneNumber$: BehaviorSubject<string> = this.userService.userPhoneNumber$;
   name$: BehaviorSubject<string> = this.userService.userName$;
   restaurantName$ = this.appService.restaurantName$;
+  otp$: BehaviorSubject<string> = new BehaviorSubject('');
   constructor(
     private cartService: CartService,
     private router: Router,
     private userService: UserService,
-    private appService: AppService
+    private appService: AppService,
+    private toastController: ToastController
   ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);
@@ -84,7 +87,9 @@ export class CartPage {
     this.action = 'otp';
   }
   // this called every time when user changed the code
-  onCodeChanged(code: string) {}
+  onCodeChanged(code: string) {
+    this.otp$.next(code);
+  }
 
   // this called only if user entered full code
   onCodeCompleted(code: string) {}
@@ -92,17 +97,31 @@ export class CartPage {
   async verifyOTP(otp: string) {
     // Implement your OTP verification logic here
     fetch(
-      `https://api-test.tappya.com/auth/otp/verify?account=${this.appService.restaurantName$.value}&mobile=2${phoneNumber}&code=${otp}`,
+      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${this.phoneNumber$.value}&code=${this.otp$.value}`,
       {
         method: 'POST',
       }
     )
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 200) {
+          this.action = 'name';
+        } else {
+          this.toastController
+            .create({
+              message: 'Invalid OTP code. Please try again.',
+              duration: 2000,
+              position: 'bottom',
+              color: 'danger',
+            })
+            .then((toast) => toast.present());
+        }
+      })
       .then((data) => {
         console.log(data);
+      })
+      .catch((error) => {
+        console.error('Error verifying OTP:', error);
       });
-    console.log('Verifying OTP:', otp);
-    this.action = 'name';
   }
   continue() {
     console.log('continue');
