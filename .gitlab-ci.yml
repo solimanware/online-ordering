@@ -24,7 +24,7 @@ build:
     - ls /builds
     - echo "frontend-group"
     - ls /builds/frontend-group
-    - echo"online-ordering"
+    - echo "online-ordering"
     - ls /builds/frontend-group/online-ordering
     - echo "www"
     - ls /builds/frontend-group/online-ordering/www
