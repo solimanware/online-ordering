@@ -15,7 +15,7 @@ stages:
 # Build stage for compiling/preparing assets
 build:
   stage: build
-  image: node:16  # Adjust based on your project needs
+  image: node:20  # Adjust based on your project needs
   script:
     - npm install
     - npm run build  # or your build command
@@ -32,7 +32,7 @@ build:
 # Test stage
 test:
   stage: test
-  image: node:16
+  image: node:20
   script:
     - npm install
     - npm run test  # Adjust to your test command
