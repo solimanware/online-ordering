@@ -21,16 +21,16 @@ build:
     - npm run build
     - ls
     - echo "builds"
-    - ls builds
+    - ls /builds
     - echo "frontend-group"
-    - ls builds/frontend-group
+    - ls /builds/frontend-group
     - echo"online-ordering"
-    - ls builds/frontend-group/online-ordering
+    - ls /builds/frontend-group/online-ordering
     - echo "www"
-    - ls builds/frontend-group/online-ordering/www
+    - ls /builds/frontend-group/online-ordering/www
   artifacts:
     paths:
-      - builds/frontend-group/online-ordering/www  # Adjust to your build output directory
+      - /builds/frontend-group/online-ordering/www  # Adjust to your build output directory
     expire_in: 1 hour
   cache:
     paths:
@@ -63,10 +63,10 @@ deploy_s3:
     # Verify AWS credentials are set
     - aws sts get-caller-identity
   script:
-    - ls -la builds/frontend-group/online-ordering/
-    - ls -la builds/frontend-group/online-ordering/www
+    - ls -la /builds/frontend-group/online-ordering/
+    - ls -la /builds/frontend-group/online-ordering/www
     # Sync built files to S3
-    - aws s3 sync builds/frontend-group/online-ordering/www s3://${S3_BUCKET}${S3_PATH} --delete
+    - aws s3 sync /builds/frontend-group/online-ordering/www s3://${S3_BUCKET}${S3_PATH} --delete
     # Optional: Set cache headers
     - aws s3 cp s3://${S3_BUCKET}${S3_PATH} s3://${S3_BUCKET}${S3_PATH} --recursive --metadata-directive REPLACE --cache-control max-age=86400,public
     # Optional: Invalidate CloudFront distribution if using CDN
