@@ -19,7 +19,7 @@ build:
   script:
     - npm install
     - npm run build
-    - ls
+    - ls dist/
   artifacts:
     paths:
       - dist/  # Adjust to your build output directory
