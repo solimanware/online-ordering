@@ -30,7 +30,7 @@ build:
     - ls /builds/frontend-group/online-ordering/www
   artifacts:
     paths:
-      - /builds/frontend-group/online-ordering/www  # Adjust to your build output directory
+      - builds/frontend-group/online-ordering/www  # Adjust to your build output directory
     expire_in: 1 hour
   cache:
     paths:
