@@ -18,7 +18,8 @@ build:
   image: node:20  # Adjust based on your project needs
   script:
     - npm install
-    - npm run build  # or your build command
+    - npm run build
+    - ls -R  # or your build command
   artifacts:
     paths:
       - builds/frontend-group/online-ordering/www  # Adjust to your build output directory
@@ -54,6 +55,8 @@ deploy_s3:
     # Verify AWS credentials are set
     - aws sts get-caller-identity
   script:
+    - ls -la builds/frontend-group/online-ordering/
+    - ls -la builds/frontend-group/online-ordering/www
     # Sync built files to S3
     - aws s3 sync builds/frontend-group/online-ordering/www s3://${S3_BUCKET}${S3_PATH} --delete
     # Optional: Set cache headers
