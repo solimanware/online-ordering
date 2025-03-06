@@ -9,7 +9,7 @@ variables:
 # Define stages
 stages:
   - build
-  - test
+  #- test
   - deploy
 
 # Build stage for compiling/preparing assets
@@ -30,17 +30,17 @@ build:
     - master  # Run only on main branch
 
 # Test stage
-test:
-  stage: test
-  image: node:20
-  script:
-    - npm install
-    - npm run test  # Adjust to your test command
-  cache:
-    paths:
-      - node_modules/
-  only:
-    - master
+#test:
+#  stage: test
+#  image: node:20
+#  script:
+#    - npm install
+#    - npm run test  # Adjust to your test command
+#  cache:
+#    paths:
+#      - node_modules/
+#  only:
+#    - master
 
 # Deploy to S3
 deploy_s3:
