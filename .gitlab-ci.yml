@@ -19,7 +19,15 @@ build:
   script:
     - npm install
     - npm run build
-    - ls -R  # or your build command
+    - ls
+    - echo "builds"
+    - ls builds
+    - echo "frontend-group"
+    - ls builds/frontend-group
+    - echo"online-ordering"
+    - ls builds/frontend-group/online-ordering
+    - echo "www"
+    - ls builds/frontend-group/online-ordering/www
   artifacts:
     paths:
       - builds/frontend-group/online-ordering/www  # Adjust to your build output directory
