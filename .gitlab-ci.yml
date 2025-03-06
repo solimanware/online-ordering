@@ -21,7 +21,7 @@ build:
     - npm run build  # or your build command
   artifacts:
     paths:
-      - dist/  # Adjust to your build output directory
+      - builds/frontend-group/online-ordering/www  # Adjust to your build output directory
     expire_in: 1 hour
   cache:
     paths:
