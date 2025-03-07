@@ -5,6 +5,7 @@ variables:
   AWS_DEFAULT_REGION: "eu-west-1"
   # Optional: Set custom path within bucket
   S3_PATH: "/"
+  CI_DEBUG_TRACE: "true"
 
 # Define stages
 stages:
