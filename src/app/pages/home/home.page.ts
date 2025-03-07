@@ -1,5 +1,5 @@
 import { AsyncPipe, NgStyle } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -53,7 +53,7 @@ import { UserType } from 'src/app/services/user.service';
     IonSpinner,
   ],
 })
-export class HomePage {
+export class HomePage implements OnInit {
   @ViewChild(IonContent) content!: IonContent;
   @ViewChild(IonSegment) segment!: IonSegment;
   isFixedContentSticky: boolean = false;
@@ -102,6 +102,19 @@ export class HomePage {
         this.activeCategory$.next(categories[0].name.en);
         console.log('active category', this.activeCategory$.value);
       }
+    });
+  }
+
+  ngOnInit() {
+    console.log('I am here');
+    this.metaData$.subscribe((metaData) => {
+      fetch(
+        `https://api-test.tappya.com/branch/${this.metaData$.value.branches[0].id}/pos/${this.metaData$.value.branches[0].posId}/out-of-stock?account=${this.appService.restaurantName$.value}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+        });
     });
   }
 
