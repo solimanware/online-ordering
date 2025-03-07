@@ -5,23 +5,25 @@ variables:
   AWS_DEFAULT_REGION: "eu-west-1"
   # Optional: Set custom path within bucket
   S3_PATH: "/"
+  CI_DEBUG_TRACE: "true"
 
 # Define stages
 stages:
   - build
-  - test
+  #- test
   - deploy
 
 # Build stage for compiling/preparing assets
 build:
   stage: build
-  image: node:16  # Adjust based on your project needs
+  image: node:20  # Adjust based on your project needs
   script:
     - npm install
-    - npm run build  # or your build command
+    - npm run build
+    - ls /builds/frontend-group/online-ordering/www/
   artifacts:
     paths:
-      - dist/  # Adjust to your build output directory
+      - /builds/frontend-group/online-ordering/www/  # Adjust to your build output directory
     expire_in: 1 hour
   cache:
     paths:
@@ -30,17 +32,17 @@ build:
     - master  # Run only on main branch
 
 # Test stage
-test:
-  stage: test
-  image: node:16
-  script:
-    - npm install
-    - npm run test  # Adjust to your test command
-  cache:
-    paths:
-      - node_modules/
-  only:
-    - master
+#test:
+#  stage: test
+#  image: node:20
+#  script:
+#    - npm install
+#    - npm run test  # Adjust to your test command
+#  cache:
+#    paths:
+#      - node_modules/
+#  only:
+#    - master
 
 # Deploy to S3
 deploy_s3:
@@ -55,7 +57,7 @@ deploy_s3:
     - aws sts get-caller-identity
   script:
     # Sync built files to S3
-    - aws s3 sync dist/ s3://${S3_BUCKET}${S3_PATH} --delete
+    - aws s3 sync /builds/frontend-group/online-ordering/ s3://${S3_BUCKET}${S3_PATH} --delete
     # Optional: Set cache headers
     - aws s3 cp s3://${S3_BUCKET}${S3_PATH} s3://${S3_BUCKET}${S3_PATH} --recursive --metadata-directive REPLACE --cache-control max-age=86400,public
     # Optional: Invalidate CloudFront distribution if using CDN
