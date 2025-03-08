@@ -36,7 +36,7 @@
     "maplibre-gl": "^5.1.0",
     "ngx-lottie": "^13.0.1",
     "rxjs": "~7.8.0",
-    "tailwindcss": "^4.0.6",
+    "tailwindcss": "latest",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -54,6 +54,7 @@
     "@ionic/angular-toolkit": "^12.0.0",
     "@tailwindcss/aspect-ratio": "latest",
     "@tailwindcss/forms": "latest",
+    "@tailwindcss/postcss": "latest",
     "@tailwindcss/line-clamp": "latest",
     "@tailwindcss/typography": "latest",
     "@types/jasmine": "~5.1.0",
