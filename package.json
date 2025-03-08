@@ -29,6 +29,7 @@
     "@capacitor/keyboard": "7.0.0",
     "@capacitor/status-bar": "7.0.0",
     "@ionic/angular": "^8.0.0",
+    "@ionic/storage-angular": "^4.0.0",
     "@maplibre/ngx-maplibre-gl": "^19.0.0",
     "angular-code-input": "^2.0.0",
     "aws-sdk": "^2.1692.0",

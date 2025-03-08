@@ -10,11 +10,12 @@ import {
   provideIonicAngular,
 } from '@ionic/angular/standalone';
 
+import { importProvidersFrom } from '@angular/core';
+import { IonicStorageModule } from '@ionic/storage-angular';
 import player from 'lottie-web';
 import { provideLottieOptions } from 'ngx-lottie';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
-//hi
 
 export function playerFactory() {
   return player;
@@ -26,6 +27,7 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular({
       mode: 'ios',
     }),
+    importProvidersFrom(IonicStorageModule.forRoot()),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideLottieOptions({

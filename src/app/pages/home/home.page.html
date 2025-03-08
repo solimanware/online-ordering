@@ -179,3 +179,81 @@
   <p class="mt-4 text-gray-600">Loading menu...</p>
 </div>
 }
+
+<ion-footer>
+  @switch (action) { @case ('phone-verification') {
+  <div
+    class="phone-verification flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <h1 class="text-lg font-semibold text-gray-900">
+      Phone Verification via WhatsApp OTP
+    </h1>
+    <p>Enter your phone number to receive a verification code via WhatsApp.</p>
+    <div class="mt-4">
+      <div class="relative">
+        <input
+          type="tel"
+          placeholder="EX:01029889661"
+          class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          [ngModel]="phoneNumber$.value"
+          (ngModelChange)="phoneNumber$.next($event)"
+        />
+      </div>
+      <button
+        class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+        (click)="sendWhatsAppOTP(phoneNumber$.value)"
+      >
+        Send OTP
+      </button>
+    </div>
+  </div>
+  }@case ('otp') {
+  <div
+    class="otp flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <h1 class="text-lg font-semibold text-gray-900">
+      Enter OTP Sent to {{ phoneNumber$.value }}
+    </h1>
+    <p>
+      We've sent a 4-digit code to your WhatsApp. Enter it below to verify your
+      number.
+    </p>
+    <code-input
+      class="mt-4"
+      [isCodeHidden]="false"
+      [codeLength]="4"
+      (codeChanged)="onCodeChanged($event)"
+      (codeCompleted)="onCodeCompleted($event)"
+    >
+    </code-input>
+    <button
+      class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+      (click)="verifyOTP(phoneNumber$.value)"
+    >
+      Verify & Continue
+    </button>
+  </div>
+  }@case ('name') {
+  <div
+    class="name flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+  >
+    <h1 class="text-lg font-semibold text-gray-900">
+      Please enter your name to continue
+    </h1>
+    <p>You can edit this from your profile section any time</p>
+    <input
+      type="text"
+      placeholder="Enter your name"
+      class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+      [ngModel]="name$.value"
+      (ngModelChange)="name$.next($event)"
+    />
+    <button
+      class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+      (click)="continue()"
+    >
+      Continue
+    </button>
+  </div>
+  } }
+</ion-footer>

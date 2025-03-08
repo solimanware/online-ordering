@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Category, Item } from 'src/app/interfaces/categories';
 import { Branch } from 'src/app/interfaces/metaData';
 import { MetaData } from '../interfaces/metaData';
+import { AppService } from './app.service';
 export type OrderType = 'delivery' | 'pickup' | null;
 
 @Injectable({
@@ -20,7 +21,10 @@ export class HomePageService {
   nearestBranch$ = new BehaviorSubject<Branch | null>(null);
   shouldShowPickupActionSheet$ = new BehaviorSubject<boolean>(false);
   isPickupFlow$ = new BehaviorSubject<boolean>(false);
-  constructor(private toastController: ToastController) {}
+  constructor(
+    private toastController: ToastController,
+    private appService: AppService
+  ) {}
 
   async setDemoMode() {
     setTimeout(async () => {
@@ -45,6 +49,29 @@ export class HomePageService {
         console.log('categories', data);
         this.categories$.next(data.categories);
       });
+  }
+
+  async findAndSetNearestBranch(location: [number, number]) {
+    try {
+      const response = await fetch(
+        `https://api-test.tappya.com/link/search/nearest-branch?lng=${location[1].toString()}&lat=${location[0].toString()}&account=${
+          this.appService.restaurantName$.value
+        }`,
+        {
+          method: 'GET',
+        }
+      );
+
+      const nearestBranch = await response.json();
+      this.nearestBranch$.next(nearestBranch);
+    } catch (error) {
+      console.error('Error finding nearest branch:', error);
+      // Keep the existing branch if the API call fails
+      const branches = this.metaData$.value?.branches;
+      if (branches?.length) {
+        this.nearestBranch$.next(branches[0]);
+      }
+    }
   }
 
   getMetaData(segment: string) {

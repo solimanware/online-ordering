@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
+  IonFooter,
   IonIcon,
   IonLabel,
   IonSearchbar,
@@ -12,6 +13,7 @@ import {
   IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
+import { CodeInputModule } from 'angular-code-input';
 import { addIcons } from 'ionicons';
 import {
   cartOutline,
@@ -30,7 +32,7 @@ import { Branch, MetaData } from 'src/app/interfaces/metaData';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService, OrderType } from 'src/app/services/home-page.service';
-import { UserType } from 'src/app/services/user.service';
+import { UserService, UserType } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-home',
@@ -51,6 +53,8 @@ import { UserType } from 'src/app/services/user.service';
     ChoosePickupBranchActionSheetComponent,
     NgStyle,
     IonSpinner,
+    CodeInputModule,
+    IonFooter,
   ],
 })
 export class HomePage implements OnInit {
@@ -79,14 +83,18 @@ export class HomePage implements OnInit {
   isPickupFlow$: BehaviorSubject<boolean> = this.homePageService.isPickupFlow$;
   returnTo: string = 'home';
   restaurantName$ = this.appService.restaurantName$;
-
+  phoneNumber$: BehaviorSubject<string> = this.userService.userPhoneNumber$;
+  name$: BehaviorSubject<string> = this.userService.userName$;
+  action: 'phone-verification' | 'name' | 'otp' | null = null;
+  otp$: BehaviorSubject<string> = new BehaviorSubject('');
   constructor(
     private homePageService: HomePageService,
     private toastController: ToastController,
     private router: Router,
     private cartService: CartService,
     private route: ActivatedRoute,
-    private appService: AppService
+    private appService: AppService,
+    private userService: UserService
   ) {
     addIcons({
       globeOutline,
@@ -116,6 +124,93 @@ export class HomePage implements OnInit {
           console.log(data);
         });
     });
+  }
+
+  sendWhatsAppOTP(phoneNumber: string) {
+    // Implement your WhatsApp OTP sending logic here
+    console.log('Sending OTP to:', phoneNumber);
+    this.phoneNumber$.next(phoneNumber);
+    fetch(
+      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=2${phoneNumber}`
+    )
+      .then((res) => res.text())
+      .then((data) => {
+        console.log(data);
+      });
+    this.action = 'otp';
+  }
+
+  onCodeChanged(code: string) {
+    this.otp$.next(code);
+  }
+
+  onCodeCompleted(code: string) {
+    this.verifyOTP(this.phoneNumber$.value);
+  }
+
+  verifyOTP(phoneNumber: string) {
+    if (!this.otp$.value) return;
+
+    this.userService.verifyOTP(phoneNumber, this.otp$.value).subscribe({
+      next: (response) => {
+        if (response.status === 201) {
+          // New user
+          this.action = 'name';
+        } else {
+          // Existing user
+          if (!this.userLocation$.getValue()) {
+            this.router.navigate(
+              ['/', this.restaurantName$.value, 'specify-location'],
+              {
+                queryParams: { returnTo: 'home' },
+              }
+            );
+          } else {
+            // Find and set nearest branch based on user location
+            this.homePageService.findAndSetNearestBranch(
+              this.userLocation$.getValue()
+            );
+          }
+          this.action = null;
+          this.homePageService.isUserLoggedIn$.next(true);
+        }
+      },
+      error: (error) => {
+        console.error('OTP verification failed:', error);
+        // Show error toast
+      },
+    });
+  }
+
+  continue() {
+    if (!this.name$.value) return;
+
+    this.userService.saveUserName(this.name$.value).subscribe({
+      next: () => {
+        if (!this.userLocation$.getValue()) {
+          this.router.navigate(
+            ['/', this.restaurantName$.value, 'specify-location'],
+            {
+              queryParams: { returnTo: 'home' },
+            }
+          );
+        } else {
+          this.homePageService.findAndSetNearestBranch(
+            this.userLocation$.getValue()
+          );
+        }
+        this.action = null;
+        this.homePageService.isUserLoggedIn$.next(true);
+      },
+      error: (error) => {
+        console.error('Failed to save user name:', error);
+        // Show error toast
+      },
+    });
+  }
+
+  async presentPhoneVerification() {
+    this.action = 'phone-verification';
   }
 
   ionWillEnter() {
@@ -157,14 +252,7 @@ export class HomePage implements OnInit {
 
   async login() {
     this.orderType$.next('delivery');
-    this.homePageService.isUserLoggedIn$.next(true);
-    const toast = await this.toastController.create({
-      message: 'You have logged in successfully',
-      duration: 2000,
-      position: 'bottom',
-      color: 'success',
-    });
-    // await toast.present();
+    this.action = 'phone-verification';
   }
 
   itemChoosen() {
