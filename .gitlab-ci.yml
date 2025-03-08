@@ -16,21 +16,21 @@ stages:
 # Build stage for compiling/preparing assets
 build:
   stage: build
-  image: node:20  # Adjust based on your project needs
+  image: node:22.0.0  # Adjust based on your project needs
   script:
     - npm install
     - npm run build
     - ls /builds/frontend-group/online-ordering/www/
   artifacts:
+    access: developer
     paths:
       - /builds/frontend-group/online-ordering/www/  # Adjust to your build output directory
     expire_in: 1 hour
-  cache:
-    paths:
-      - node_modules/
   only:
     - master  # Run only on main branch
-
+cache:
+    paths:
+      - node_modules/
 # Test stage
 #test:
 #  stage: test
