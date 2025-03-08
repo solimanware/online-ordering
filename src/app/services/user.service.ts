@@ -11,7 +11,7 @@ export type UserType =
 
 interface UserResponse {
   status: 200 | 201;
-  userId: string;
+  id: string;
   name?: string;
   addresses?: Address[];
 }
@@ -57,8 +57,8 @@ export class UserService {
       ).then((res) => res.json() as Promise<UserResponse>)
     ).pipe(
       switchMap(async (response) => {
-        await this.storage.set('userId', response.userId);
-        this.userId$.next(response.userId);
+        await this.storage.set('userId', response.id);
+        this.userId$.next(response.id);
 
         if (response.name) {
           this.userName$.next(response.name);
