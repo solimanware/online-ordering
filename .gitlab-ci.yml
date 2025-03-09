@@ -10,16 +10,18 @@ variables:
 
 # Define stages
 stages:
+  - .pre
   - build
   #- test
   - deploy
-
+.pre:
+  script:
+    - echo $CI_JOB_TOKEN
 # Build stage for compiling/preparing assets
 build:
   stage: build
   image: node:22.0.0  # Adjust based on your project needs
   script:
-    - echo $CI_JOB_TOKEN
     - npm install
     - npm run build
     - ls /builds/frontend-group/online-ordering/www/
