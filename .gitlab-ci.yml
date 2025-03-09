@@ -21,7 +21,6 @@ build:
     - npm run build
     - ls /builds/frontend-group/online-ordering/www/
   artifacts:
-    access: developer
     paths:
       - /builds/frontend-group/online-ordering/www/  # Adjust to your build output directory
     expire_in: 1 hour
