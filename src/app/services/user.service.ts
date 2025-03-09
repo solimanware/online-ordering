@@ -90,23 +90,10 @@ export class UserService {
   }
 
   saveUserName(name: string) {
-    return from(
-      fetch(
-        `https://api-test.tappya.com/users/${this.userId$.value}/name?account=${this.appService.restaurantName$.value}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name }),
-        }
-      ).then((res) => res.json())
-    ).pipe(
-      map(() => {
-        this.userName$.next(name);
-        return true;
-      })
-    );
+    this.storage.set('user', {
+      ...this.storage.get('user'),
+      name,
+    });
   }
 
   private fetchUserData() {
