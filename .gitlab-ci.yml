@@ -5,7 +5,6 @@ variables:
   AWS_DEFAULT_REGION: "eu-west-1"
   # Optional: Set custom path within bucket
   S3_PATH: "/"
-  CI_DEBUG_TRACE: "true"
 
 # Define stages
 stages:
@@ -58,7 +57,7 @@ deploy_s3:
     # Sync built files to S3
     - aws s3 sync /builds/frontend-group/online-ordering/www/ s3://${S3_BUCKET}${S3_PATH} --delete
     # Optional: Set cache headers
-    - aws s3 cp s3://${S3_BUCKET}${S3_PATH} s3://${S3_BUCKET}${S3_PATH} --recursive --metadata-directive REPLACE --cache-control max-age=86400,public
+    # - aws s3 cp s3://${S3_BUCKET}${S3_PATH} s3://${S3_BUCKET}${S3_PATH} --recursive --metadata-directive REPLACE --cache-control max-age=86400
     # Optional: Invalidate CloudFront distribution if using CDN
     # - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"
   only:
