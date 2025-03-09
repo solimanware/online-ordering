@@ -26,9 +26,9 @@ build:
     expire_in: 1 hour
   only:
     - master  # Run only on main branch
-cache:
-    paths:
-      - node_modules/
+  cache:
+      paths:
+        - node_modules/
 # Test stage
 #test:
 #  stage: test
