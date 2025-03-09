@@ -21,6 +21,7 @@ build:
     - npm run build
     - ls /builds/frontend-group/online-ordering/www
   artifacts:
+    name": "www.zip"
     paths:
       - /builds/frontend-group/online-ordering/www/*
     expire_in: 1 hour
