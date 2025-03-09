@@ -86,6 +86,8 @@
   <button
     class="mt-4 w-full bg-red-500 text-white py-2 rounded-full font-medium"
     (click)="locationChoosen()"
+    [disabled]="disabled"
+    [class.opacity-50]="disabled"
   >
     Yes deliver here
   </button>

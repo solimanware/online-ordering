@@ -64,6 +64,7 @@ export class HomePageService {
 
       const nearestBranch = await response.json();
       this.nearestBranch$.next(nearestBranch);
+      return nearestBranch;
     } catch (error) {
       console.error('Error finding nearest branch:', error);
       // Keep the existing branch if the API call fails

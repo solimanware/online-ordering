@@ -51,6 +51,7 @@ export class SpecifyLocationPage {
   restaurantName$ = this.appService.restaurantName$;
   searchResults: any[] = [];
   searchText: string = '';
+  disabled: boolean = false;
 
   private locationClient = new Location({
     region: awsRegion,
@@ -107,6 +108,17 @@ export class SpecifyLocationPage {
   onMapMoveEnd(event: any) {
     const center = this.map.getCenter();
     this.homePageService.userLocation$.next([center.lat, center.lng]);
+    this.homePageService
+      .findAndSetNearestBranch([center.lat, center.lng])
+      .then((branch: any) => {
+        console.log('branch', branch);
+
+        if (branch.data.length) {
+          this.disabled = false;
+        } else {
+          this.disabled = true;
+        }
+      });
   }
 
   private getCurrentPosition(): any {
