@@ -6,7 +6,7 @@ variables:
   # Optional: Set custom path within bucket
   S3_PATH: "/"
   CI_DEBUG_TRACE: "true"
-  CI_JOB_TOKEN: "glrt-t1_tzWC6sDrJ6pj8CiEnLaJ"
+  CI_JOB_TOKEN: "glpat-ZgLPauvM6_bx-zDsCBb_"
 
 # Define stages
 stages:
