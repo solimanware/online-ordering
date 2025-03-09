@@ -6,17 +6,12 @@ variables:
   # Optional: Set custom path within bucket
   S3_PATH: "/"
   CI_DEBUG_TRACE: "true"
-  CI_JOB_TOKEN: "glpat-ZgLPauvM6_bx-zDsCBb_"
 
 # Define stages
 stages:
-  - .pre
   - build
   #- test
   - deploy
-.pre:
-  script:
-    - echo $CI_JOB_TOKEN
 # Build stage for compiling/preparing assets
 build:
   stage: build
