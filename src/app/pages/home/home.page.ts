@@ -191,24 +191,18 @@ export class HomePage implements OnInit {
   continue() {
     if (!this.name$.value) return;
 
-    this.userService.saveUserName(this.name$.value).subscribe({
-      next: () => {
-        if (!this.userLocation$.getValue()) {
-          this.router.navigate(
-            ['/', this.restaurantName$.value, 'specify-location'],
-            {
-              queryParams: { returnTo: 'home' },
-            }
-          );
+    this.userService.saveUserName(this.name$.value);
+
+    if (!this.userLocation$.getValue()) {
+      this.router.navigate(
+        ['/', this.restaurantName$.value, 'specify-location'],
+        {
+          queryParams: { returnTo: 'home' },
         }
-        this.action = null;
-        this.homePageService.isUserLoggedIn$.next(true);
-      },
-      error: (error) => {
-        console.error('Failed to save user name:', error);
-        // Show error toast
-      },
-    });
+      );
+    }
+    this.action = null;
+    this.homePageService.isUserLoggedIn$.next(true);
   }
 
   async presentPhoneVerification() {
