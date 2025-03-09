@@ -32,6 +32,7 @@ import { Branch, MetaData } from 'src/app/interfaces/metaData';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService, OrderType } from 'src/app/services/home-page.service';
+import { StorageService } from 'src/app/services/storage.service';
 import { UserService, UserType } from 'src/app/services/user.service';
 
 @Component({
@@ -94,7 +95,8 @@ export class HomePage implements OnInit {
     private cartService: CartService,
     private route: ActivatedRoute,
     private appService: AppService,
-    private userService: UserService
+    private userService: UserService,
+    private storage: StorageService
   ) {
     addIcons({
       globeOutline,
@@ -131,7 +133,7 @@ export class HomePage implements OnInit {
     console.log('Sending OTP to:', phoneNumber);
     this.phoneNumber$.next(phoneNumber);
     fetch(
-      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=2${phoneNumber}`
+      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${phoneNumber}`
     )
       .then((res) => res.text())
       .then((data) => {
@@ -145,7 +147,7 @@ export class HomePage implements OnInit {
   }
 
   onCodeCompleted(code: string) {
-    this.verifyOTP(this.phoneNumber$.value);
+    // this.verifyOTP(this.phoneNumber$.value);
   }
 
   verifyOTP(phoneNumber: string) {
@@ -153,12 +155,14 @@ export class HomePage implements OnInit {
 
     this.userService.verifyOTP(phoneNumber, this.otp$.value).subscribe({
       next: (response) => {
-        if (response.status === 201) {
+        if (!response.name) {
           // New user
           this.action = 'name';
         } else {
           // Existing user
-          if (!this.userLocation$.getValue()) {
+          console.log(response);
+
+          if (!response.addresses.length) {
             this.router.navigate(
               ['/', this.restaurantName$.value, 'specify-location'],
               {
@@ -166,10 +170,12 @@ export class HomePage implements OnInit {
               }
             );
           } else {
+            this.storage.set('user', response);
             // Find and set nearest branch based on user location
-            this.homePageService.findAndSetNearestBranch(
-              this.userLocation$.getValue()
-            );
+            this.homePageService.findAndSetNearestBranch([
+              parseFloat(response.addresses[0].coordinates.latitude),
+              parseFloat(response.addresses[0].coordinates.longitude),
+            ]);
           }
           this.action = null;
           this.homePageService.isUserLoggedIn$.next(true);
@@ -193,10 +199,6 @@ export class HomePage implements OnInit {
             {
               queryParams: { returnTo: 'home' },
             }
-          );
-        } else {
-          this.homePageService.findAndSetNearestBranch(
-            this.userLocation$.getValue()
           );
         }
         this.action = null;
@@ -239,15 +241,13 @@ export class HomePage implements OnInit {
   selectItem(item: Item) {
     this.homePageService.selectedItem$.next(item);
     console.log(item);
-    if (this.userLocation$.getValue()) {
-      this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
-    } else {
-      this.router.navigate([
-        '/',
-        this.restaurantName$.value,
-        'specify-location',
-      ]);
-    }
+    this.storage.get('user').then((user) => {
+      if (user) {
+        this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
+      } else {
+        this.login();
+      }
+    });
   }
 
   async login() {

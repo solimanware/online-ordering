@@ -9,18 +9,35 @@ export type UserType =
   | 'currentUserDelivery'
   | 'currentUserPickup';
 
-interface UserResponse {
-  status: 200 | 201;
+export interface UserResponse {
+  code: string;
+  mobile: string;
+  legacyId: string;
+  phoneStatus: string;
+  tenantId: string;
+  account: string;
+  addresses: Address[];
+  createdAt: number;
+  email: string;
   id: string;
-  name?: string;
-  addresses?: Address[];
+  name: string;
 }
 
-interface Address {
-  id: string;
-  location: [number, number];
-  label: string;
-  isDefault: boolean;
+export interface Address {
+  city: string;
+  street: string;
+  flat: string;
+  coordinates: Coordinates;
+  street2: string;
+  floor: string;
+  landmark: string;
+  street_name: string;
+  building: string;
+}
+
+export interface Coordinates {
+  latitude: string;
+  longitude: string;
 }
 
 @Injectable({

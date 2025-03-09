@@ -13,6 +13,7 @@ import { CodeInputModule } from 'angular-code-input';
 import { BehaviorSubject } from 'rxjs';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
+import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 
@@ -57,7 +58,8 @@ export class CartPage {
     private router: Router,
     private userService: UserService,
     private appService: AppService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private storage: StorageService
   ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);
@@ -69,6 +71,16 @@ export class CartPage {
   increaseQuantity(item: ItemDetail) {
     this.cartService.increaseQuantity(item);
   }
+
+  checkout() {
+    this.storage.get('user').then((user) => {
+      if (user) {
+        this.router.navigate(['/', this.restaurantName$.value, 'new-address']);
+      } else {
+        this.presentPhoneVerification();
+      }
+    });
+  }
   async presentPhoneVerification() {
     this.action = 'phone-verification';
   }
@@ -78,7 +90,7 @@ export class CartPage {
     console.log('Sending OTP to:', phoneNumber);
     this.phoneNumber$.next(phoneNumber);
     fetch(
-      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=2${phoneNumber}`
+      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${phoneNumber}`
     )
       .then((res) => res.text())
       .then((data) => {
