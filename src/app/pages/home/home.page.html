@@ -190,14 +190,23 @@
     </h1>
     <p>Enter your phone number to receive a verification code via WhatsApp.</p>
     <div class="mt-4">
-      <div class="relative">
-        <input
-          type="tel"
-          placeholder="EX:01029889661"
-          class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
-          [ngModel]="phoneNumber$.value"
-          (ngModelChange)="phoneNumber$.next($event)"
-        />
+      <div class="flex gap-2">
+        <div class="relative w-24">
+          <select
+            class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          >
+            <option value="+20">+20 🇪🇬</option>
+          </select>
+        </div>
+        <div class="relative flex-1">
+          <input
+            type="tel"
+            placeholder="EX:01029889661"
+            class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+            [ngModel]="phoneNumber$.value"
+            (ngModelChange)="phoneNumber$.next($event)"
+          />
+        </div>
       </div>
       <button
         class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
