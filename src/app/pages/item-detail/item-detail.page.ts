@@ -10,7 +10,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { closeOutline } from 'ionicons/icons';
+import { arrowBackOutline, closeOutline } from 'ionicons/icons';
 import {
   Item,
   Modifier,
@@ -68,9 +68,7 @@ export class ItemDetailPage implements OnInit {
     private router: Router,
     private appService: AppService
   ) {
-    addIcons({
-      closeOutline,
-    });
+    addIcons({ arrowBackOutline, closeOutline });
   }
 
   ngOnInit() {
@@ -152,12 +150,16 @@ export class ItemDetailPage implements OnInit {
 
   toggleModifier(modifier: Modifier, category: ModifierCategory) {
     const isSelected = this.isModifierSelected(modifier.id);
+    console.log('this.itemDetail', this.itemDetail);
 
     if (isSelected) {
       // Handle deselection
       if (category.minSelection > 0) {
         const currentSelections = this.getCurrentSelectionsCount(category);
-        if (currentSelections <= category.minSelection) {
+        if (
+          currentSelections <= category.minSelection &&
+          category.minSelection > 0
+        ) {
           this.showToast(
             `You must select at least ${category.minSelection} ${category.name.en}`
           );
@@ -199,7 +201,9 @@ export class ItemDetailPage implements OnInit {
     category: ModifierCategory
   ): ModifierValidation {
     const currentSelections = this.getCurrentSelectionsCount(category);
-
+    if (!category.maxSelection) {
+      category.maxSelection = Infinity;
+    }
     if (currentSelections >= category.maxSelection) {
       return {
         isValid: false,
