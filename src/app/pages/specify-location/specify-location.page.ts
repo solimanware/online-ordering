@@ -1,3 +1,4 @@
+import { NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
@@ -39,6 +40,8 @@ export const style = `https://maps.geo.${awsRegion}.amazonaws.com/v2/styles/${ma
     IonSegmentButton,
     FormsModule,
     RouterLink,
+    NgFor,
+    NgIf,
   ],
 })
 export class SpecifyLocationPage {
@@ -160,25 +163,49 @@ export class SpecifyLocationPage {
     }
 
     try {
-      const params = {
-        IndexName: 'explore.place',
-        Text: searchText,
-        BiasPosition: this.mapCenter,
-        MaxResults: 5,
-      };
-
-      const response = await this.locationClient.searchPlaceIndexForText(
-        params
+      const response = await fetch(
+        `https://places.geo.eu-west-1.amazonaws.com/v2/autocomplete?key=v1.public.eyJqdGkiOiI1OWZkZjQ4My1lZTI0LTRiNzUtYTUxOS1mY2M2NTVhZjNjY2EifdHxJgL-Gw-jZjzFQa1QwFY8Ag79JkmI4QB09vWqzMvgrr14KNPIMv-gSIdaWbROoDYN0-Q8m1-ow5oQ5E3L1kmFDwI0rLHooetc_Uu5OtSCEvXKkPO1688_5XGFIXuf_DgyqGzqF9UihjWEAFXC9BzRXdc_iMYDDy0FcAgjnN8hG50apca6Jc_Putfxu8vGHm6EuO9P2KvPwB-fLf5pCg3xq3P7Xq0qd1uIFpu9DCS-hBebCDfco249oHcK3KMJAQog1rmcUx1g3yR9ELlhulILqgTJnFmuKpkfgXGimaCqq6ShUaYPadz-TUyUOsYJkZeZE7qHK22v_OO5skweWMk.ZGQzZDY2OGQtMWQxMy00ZTEwLWIyZGUtOGVjYzUzMjU3OGE4`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            QueryText: searchText,
+          }),
+        }
       );
-      this.searchResults = response.Results || [];
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('data', data);
+
+      this.searchResults = data.ResultItems || [];
     } catch (error) {
       console.error('Error searching addresses:', error);
       this.searchResults = [];
     }
   }
 
-  selectAddress(result: any) {
-    const coordinates = result.Place.Geometry.Point;
+  getPlaceOfPlaceId(placeId: string): Promise<[number, number]> {
+    return fetch(
+      `https://places.geo.eu-west-1.amazonaws.com/v2/place/${placeId}?key=${apiKey}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+
+        const coordinates = data.Position;
+        return [coordinates[1], coordinates[0]]; // Return [latitude, longitude]
+      });
+  }
+
+  async selectAddress(result: any) {
+    console.log('result', result);
+
+    const coordinates = await this.getPlaceOfPlaceId(result.PlaceId);
+    console.log('coordinates', coordinates);
+
     this.map.flyTo({
       center: coordinates,
       zoom: 15,
