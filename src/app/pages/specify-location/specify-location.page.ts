@@ -196,7 +196,7 @@ export class SpecifyLocationPage {
         console.log(data);
 
         const coordinates = data.Position;
-        return [coordinates[1], coordinates[0]]; // Return [latitude, longitude]
+        return [coordinates[0], coordinates[1]]; // Return [latitude, longitude]
       });
   }
 
