@@ -93,7 +93,7 @@ export class ItemDetailPage implements OnInit {
     let modifiersPrice = 0;
 
     // Get base price from the item
-    const basePrice = itemDetail.price?.amount || 0;
+    const basePrice = Number((itemDetail.price?.amount || 0).toFixed(2));
 
     // Calculate variant price if selected
     if (
@@ -103,29 +103,34 @@ export class ItemDetailPage implements OnInit {
       const selectedVariant = itemDetail.variantCategories[0].variants.find(
         (v) => v.id === itemDetail.selectedVariantId
       );
-      variantPrice = selectedVariant?.price?.amount || 0;
+      variantPrice = Number((selectedVariant?.price?.amount || 0).toFixed(2));
     }
 
     // Calculate total modifiers price
     if (itemDetail.modifierCategories?.length > 0) {
-      modifiersPrice = itemDetail.selectedModifiers.reduce(
-        (total, selected) => {
-          const modifier = this.findModifierById(selected.id);
-          return total + (modifier?.price?.amount || 0) * selected.quantity;
-        },
-        0
+      modifiersPrice = Number(
+        itemDetail.selectedModifiers
+          .reduce((total, selected) => {
+            const modifier = this.findModifierById(selected.id);
+            return total + (modifier?.price?.amount || 0) * selected.quantity;
+          }, 0)
+          .toFixed(2)
       );
     }
 
     // Calculate final price
     const finalBasePrice = variantPrice > 0 ? variantPrice : basePrice;
-    const totalBeforeQuantity = finalBasePrice + modifiersPrice;
+    const totalBeforeQuantity = Number(
+      (finalBasePrice + modifiersPrice).toFixed(2)
+    );
 
     // Update prices
-    this.itemDetail.totalPrice = totalBeforeQuantity * this.quantity;
+    this.itemDetail.totalPrice = Number(
+      (totalBeforeQuantity * this.quantity).toFixed(2)
+    );
     this.itemDetail.quantity = this.quantity;
-    this.itemDetail.subtotal = this.itemDetail.totalPrice;
-    this.itemDetail.total = this.itemDetail.totalPrice;
+    this.itemDetail.subtotal = Number(this.itemDetail.totalPrice.toFixed(2));
+    this.itemDetail.total = Number(this.itemDetail.totalPrice.toFixed(2));
     this.itemDetail.currency =
       itemDetail.price?.currency ||
       itemDetail.variantCategories?.[0]?.variants?.[0]?.price?.currency ||
@@ -279,7 +284,7 @@ export class ItemDetailPage implements OnInit {
 
   selectVariant(variant: Variant) {
     this.itemDetail.selectedVariantId = variant.id;
-    this.itemDetail.totalPrice = variant.price.amount;
+    this.itemDetail.totalPrice = Number(variant.price.amount.toFixed(2));
     this.calculateTotalPrice(this.itemDetail);
   }
 

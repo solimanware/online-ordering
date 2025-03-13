@@ -18,7 +18,14 @@ import {
   searchOutline,
 } from 'ionicons/icons';
 import { Map } from 'maplibre-gl';
-import { Observable, Subscriber } from 'rxjs';
+import {
+  debounceTime,
+  from,
+  Observable,
+  Subject,
+  Subscriber,
+  switchMap,
+} from 'rxjs';
 import { AppService } from 'src/app/services/app.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 
@@ -108,20 +115,26 @@ export class SpecifyLocationPage {
     this.centerMap();
   }
 
+  private mapMoveSubject = new Subject<[number, number]>();
+
+  ngOnInit() {
+    this.mapMoveSubject
+      .pipe(
+        debounceTime(500),
+        switchMap((coordinates: [number, number]) =>
+          from(this.homePageService.findAndSetNearestBranch(coordinates))
+        )
+      )
+      .subscribe((branch: any) => {
+        console.log('branch', branch);
+        this.disabled = !branch.data.length;
+      });
+  }
+
   onMapMoveEnd(event: any) {
     const center = this.map.getCenter();
     this.homePageService.userLocation$.next([center.lat, center.lng]);
-    this.homePageService
-      .findAndSetNearestBranch([center.lat, center.lng])
-      .then((branch: any) => {
-        console.log('branch', branch);
-
-        if (branch.data.length) {
-          this.disabled = false;
-        } else {
-          this.disabled = true;
-        }
-      });
+    this.mapMoveSubject.next([center.lat, center.lng]);
   }
 
   private getCurrentPosition(): any {

@@ -24,6 +24,7 @@ export class AppComponent {
       this.appService.restaurantName$.next(restaurantName);
       this.homePageService.getMetaData(restaurantName).then(() => {
         console.log('meta data', this.homePageService.metaData$.value);
+        this.homePageService.orderType$.next('delivery');
         this.router.navigate([`/${restaurantName}/home`]);
       });
     }
