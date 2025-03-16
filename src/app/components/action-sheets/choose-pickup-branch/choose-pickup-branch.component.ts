@@ -4,13 +4,13 @@ import { Branch } from 'src/app/interfaces/metaData';
 import { HomePageService } from 'src/app/services/home-page.service';
 
 @Component({
-  selector: 'app-choose-pickup-branch-action-sheet',
-  templateUrl: './choose-pickup-branch-action-sheet.component.html',
-  styleUrls: ['./choose-pickup-branch-action-sheet.component.scss'],
+  selector: 'app-choose-pickup-branch',
+  templateUrl: './choose-pickup-branch.component.html',
+  styleUrls: ['./choose-pickup-branch.component.scss'],
   standalone: true,
   imports: [IonIcon, IonSearchbar],
 })
-export class ChoosePickupBranchActionSheetComponent implements OnInit {
+export class ChoosePickupBranchComponent implements OnInit {
   @Input() branches: Branch[] = [];
   constructor(private homePageService: HomePageService) {}
 

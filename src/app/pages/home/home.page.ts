@@ -10,7 +10,6 @@ import {
   IonSearchbar,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
@@ -24,16 +23,25 @@ import {
   personOutline,
   searchOutline,
 } from 'ionicons/icons';
+import { phone } from 'phone';
 import { BehaviorSubject } from 'rxjs';
+import { ChoosePickupBranchComponent } from 'src/app/components/action-sheets/choose-pickup-branch/choose-pickup-branch.component';
+import { EnterNameComponent } from 'src/app/components/action-sheets/enter-name/enter-name.component';
+import { OtpComponent } from 'src/app/components/action-sheets/otp/otp.component';
+import { PhoneVerificationComponent } from 'src/app/components/action-sheets/phone-verification/phone-verification.component';
 import { CartSummryCtaComponent } from 'src/app/components/cart-summry-cta/cart-summry-cta.component';
-import { ChoosePickupBranchActionSheetComponent } from 'src/app/components/choose-pickup-branch-action-sheet/choose-pickup-branch-action-sheet.component';
+import { LoaderComponent } from 'src/app/components/loader/loader.component';
 import { Category, Item } from 'src/app/interfaces/categories';
 import { Branch, MetaData } from 'src/app/interfaces/metaData';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService, OrderType } from 'src/app/services/home-page.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { UserService, UserType } from 'src/app/services/user.service';
+import {
+  UserResponse,
+  UserService,
+  UserType,
+} from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-home',
@@ -51,11 +59,14 @@ import { UserService, UserType } from 'src/app/services/user.service';
     AsyncPipe,
     FormsModule,
     CartSummryCtaComponent,
-    ChoosePickupBranchActionSheetComponent,
+    ChoosePickupBranchComponent,
     NgStyle,
-    IonSpinner,
     CodeInputModule,
     IonFooter,
+    LoaderComponent,
+    PhoneVerificationComponent,
+    OtpComponent,
+    EnterNameComponent,
   ],
 })
 export class HomePage implements OnInit {
@@ -126,20 +137,107 @@ export class HomePage implements OnInit {
           console.log(data);
         });
     });
+    //See if user is logged in
+    this.storage.get('user').then((user) => {
+      if (user) {
+        console.log('user', user);
+
+        this.isUserLoggedIn$.next(true);
+      } else {
+        console.log('user not found');
+
+        this.isUserLoggedIn$.next(false);
+      }
+    });
+    //Get user location and get nearest branch automatically
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLocation: [number, number] = [
+            position.coords.latitude,
+            position.coords.longitude,
+          ];
+          this.userService.userLocation$ = userLocation;
+          this.homePageService.userLocation$.next(userLocation);
+          console.log(userLocation);
+
+          this.homePageService
+            .findAndSetNearestBranch(userLocation)
+            .then((res) => {
+              console.log(res.data[0]);
+
+              this.homePageService.nearestBranch$.next(res.data[0]);
+            });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          // Use default branch if location access is denied
+          const branches = this.metaData$.value?.branches;
+          if (branches?.length) {
+            this.homePageService.nearestBranch$.next(branches[0]);
+          }
+        }
+      );
+    } else {
+      console.log('Geolocation not supported by this browser');
+      // Use default branch if geolocation is not supported
+      const branches = this.metaData$.value?.branches;
+      if (branches?.length) {
+        this.homePageService.nearestBranch$.next(branches[0]);
+      }
+    }
+  }
+
+  handleOTP(otp: number) {
+    console.log(otp);
+    this.otp$.next(otp.toString());
+    this.action = 'otp';
+  }
+
+  handleOTPResult(res: UserResponse) {
+    this.homePageService.isUserLoggedIn$.next(true);
+    console.log(res);
+    if (!res.name) {
+      this.action = 'name';
+    } else if (!res.addresses.length) {
+      this.storage.set('user', res);
+      this.router.navigate([
+        '/',
+        this.restaurantName$.value,
+        'specify-location',
+      ]);
+      this.action = null;
+    } else {
+      this.action = null;
+    }
   }
 
   sendWhatsAppOTP(phoneNumber: string) {
     // Implement your WhatsApp OTP sending logic here
     console.log('Sending OTP to:', phoneNumber);
-    this.phoneNumber$.next(phoneNumber);
-    fetch(
-      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${phoneNumber}`
-    )
-      .then((res) => res.text())
-      .then((data) => {
-        console.log(data);
-      });
-    this.action = 'otp';
+    const phoneNumberFormatted = phone(phoneNumber, { country: 'EG' });
+    if (phoneNumberFormatted.isValid) {
+      this.phoneNumber$.next(phoneNumberFormatted.phoneNumber);
+      fetch(
+        `https://api-test.tappya.com/auth/otp?account=${
+          this.appService.restaurantName$.value
+        }&mobile=${encodeURIComponent(phoneNumberFormatted.phoneNumber)}`
+      )
+        .then((res) => res.text())
+        .then((data) => {
+          console.log(data);
+        });
+      this.action = 'otp';
+    } else {
+      this.toastController
+        .create({
+          message: 'Invalid phone number. Please try again.',
+          duration: 2000,
+          position: 'bottom',
+          color: 'danger',
+        })
+        .then((toast) => toast.present());
+    }
   }
 
   onCodeChanged(code: string) {

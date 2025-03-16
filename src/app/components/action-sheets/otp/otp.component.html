@@ -1,0 +1,25 @@
+<div
+  class="otp flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+>
+  <h1 class="text-lg font-semibold text-gray-900">
+    Enter OTP Sent to {{ phoneNumber$.value }}
+  </h1>
+  <p>
+    We've sent a 4-digit code to your WhatsApp. Enter it below to verify your
+    number.
+  </p>
+  <code-input
+    class="mt-4"
+    [isCodeHidden]="false"
+    [codeLength]="4"
+    (codeChanged)="onCodeChanged($event)"
+    (codeCompleted)="onCodeCompleted($event)"
+  >
+  </code-input>
+  <button
+    class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+    (click)="verifyOTP(phoneNumber$.value, otp$.value)"
+  >
+    Verify & Continue
+  </button>
+</div>

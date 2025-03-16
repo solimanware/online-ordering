@@ -10,6 +10,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
+import { phone } from 'phone';
 import { BehaviorSubject } from 'rxjs';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
@@ -88,15 +89,29 @@ export class CartPage {
   async sendWhatsAppOTP(phoneNumber: string) {
     // Implement your WhatsApp OTP sending logic here
     console.log('Sending OTP to:', phoneNumber);
-    this.phoneNumber$.next(phoneNumber);
-    fetch(
-      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${phoneNumber}`
-    )
-      .then((res) => res.text())
-      .then((data) => {
-        console.log(data);
-      });
-    this.action = 'otp';
+    const phoneNumberFormatted = phone(phoneNumber, { country: 'EG' });
+    if (phoneNumberFormatted.isValid) {
+      this.phoneNumber$.next(phoneNumberFormatted.phoneNumber);
+      fetch(
+        `https://api-test.tappya.com/auth/otp?account=${
+          this.appService.restaurantName$.value
+        }&mobile=${encodeURIComponent(phoneNumberFormatted.phoneNumber)}`
+      )
+        .then((res) => res.text())
+        .then((data) => {
+          console.log(data);
+        });
+      this.action = 'otp';
+    } else {
+      this.toastController
+        .create({
+          message: 'Invalid phone number. Please try again.',
+          duration: 2000,
+          position: 'bottom',
+          color: 'danger',
+        })
+        .then((toast) => toast.present());
+    }
   }
   // this called every time when user changed the code
   onCodeChanged(code: string) {
@@ -109,7 +124,11 @@ export class CartPage {
   async verifyOTP(otp: string) {
     // Implement your OTP verification logic here
     fetch(
-      `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${this.phoneNumber$.value}&code=${this.otp$.value}`,
+      `https://api-test.tappya.com/auth/otp?account=${
+        this.appService.restaurantName$.value
+      }&mobile=${encodeURIComponent(this.phoneNumber$.value)}&code=${
+        this.otp$.value
+      }`,
       {
         method: 'POST',
       }

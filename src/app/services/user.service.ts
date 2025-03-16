@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, from, map, switchMap } from 'rxjs';
+import { BehaviorSubject, from, switchMap } from 'rxjs';
 import { AppService } from './app.service';
 import { StorageService } from './storage.service';
 
@@ -60,14 +60,27 @@ export class UserService {
     const userId = await this.storage.get('userId');
     if (userId) {
       this.userId$.next(userId);
-      this.fetchUserData();
     }
+  }
+
+  sendWhatsAppOTP(phoneNumber: string) {
+    return from(
+      fetch(
+        `https://api-test.tappya.com/auth/otp?account=${
+          this.appService.restaurantName$.value
+        }&mobile=${encodeURIComponent(phoneNumber)}`
+      )
+    );
   }
 
   verifyOTP(phoneNumber: string, otp: string) {
     return from(
       fetch(
-        `https://api-test.tappya.com/auth/otp?account=${this.appService.restaurantName$.value}&mobile=+2${this.userPhoneNumber$.value}&code=${otp}`,
+        `https://api-test.tappya.com/auth/otp?account=${
+          this.appService.restaurantName$.value
+        }&mobile=${encodeURIComponent(
+          this.userPhoneNumber$.value
+        )}&code=${otp}`,
         {
           method: 'POST',
         }
@@ -96,21 +109,21 @@ export class UserService {
     });
   }
 
-  private fetchUserData() {
-    return from(
-      fetch(
-        `https://api-test.tappya.com/users/${this.userId$.value}?account=${this.appService.restaurantName$.value}`
-      ).then((res) => res.json() as Promise<UserResponse>)
-    ).pipe(
-      map((response) => {
-        if (response.name) {
-          this.userName$.next(response.name);
-        }
-        if (response.addresses) {
-          this.userAddresses$.next(response.addresses);
-        }
-        return response;
-      })
-    );
-  }
+  // private fetchUserData() {
+  //   return from(
+  //     fetch(
+  //       `https://api-test.tappya.com/users/${this.userId$.value}?account=${this.appService.restaurantName$.value}`
+  //     ).then((res) => res.json() as Promise<UserResponse>)
+  //   ).pipe(
+  //     map((response) => {
+  //       if (response.name) {
+  //         this.userName$.next(response.name);
+  //       }
+  //       if (response.addresses) {
+  //         this.userAddresses$.next(response.addresses);
+  //       }
+  //       return response;
+  //     })
+  //   );
+  // }
 }

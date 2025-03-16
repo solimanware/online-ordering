@@ -1,0 +1,46 @@
+<div
+  class="phone-verification flex-col justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"
+>
+  <h1 class="text-lg font-semibold text-gray-900">
+    Phone Verification via WhatsApp OTP
+  </h1>
+  <p>Enter your phone number to receive a verification code via WhatsApp.</p>
+  <div class="mt-4">
+    <div class="flex gap-2">
+      <div class="relative w-24">
+        <select
+          class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+        >
+          <option value="+20">+20 🇪🇬</option>
+        </select>
+      </div>
+      <div class="relative flex-1">
+        <input
+          type="tel"
+          placeholder="EX:01029889661"
+          class="w-full p-3 bg-gray-50 rounded-xl border"
+          [ngClass]="{
+            'border-gray-200': !showError,
+            'border-red-500': showError,
+            'text-gray-700': !showError,
+            'text-red-500': showError
+          }"
+          [ngModel]="phoneNumber$.value"
+          (ngModelChange)="phoneNumber$.next($event)"
+          (input)="validatePhoneNumber(phoneNumber$.value)"
+        />
+        <span *ngIf="showError" class="text-red-500 text-sm mt-1 block">
+          Please enter a valid number
+        </span>
+      </div>
+    </div>
+    <button
+      class="px-12 mb-4 mt-4 p-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-colors duration-200 float-right"
+      (click)="sendWhatsAppOTP(phoneNumber$.value)"
+      [disabled]="showError"
+      [ngClass]="{ 'opacity-50 cursor-not-allowed': showError }"
+    >
+      Send OTP
+    </button>
+  </div>
+</div>

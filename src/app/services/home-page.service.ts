@@ -5,6 +5,7 @@ import { Category, Item } from 'src/app/interfaces/categories';
 import { Branch } from 'src/app/interfaces/metaData';
 import { MetaData } from '../interfaces/metaData';
 import { AppService } from './app.service';
+import { StorageService } from './storage.service';
 export type OrderType = 'delivery' | 'pickup' | null;
 
 @Injectable({
@@ -23,7 +24,8 @@ export class HomePageService {
   isPickupFlow$ = new BehaviorSubject<boolean>(false);
   constructor(
     private toastController: ToastController,
-    private appService: AppService
+    private appService: AppService,
+    private storage: StorageService
   ) {}
 
   async setDemoMode() {
