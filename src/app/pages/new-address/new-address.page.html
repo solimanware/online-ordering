@@ -16,7 +16,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div
+  <!-- <div
     class="h-28 border border-black mx-4 flex items-center justify-center relative rounded-sm"
   >
     <mgl-map
@@ -32,7 +32,7 @@
       class="text-5xl text-red-500 absolute pointer-events-none"
       style="transform: translate(-50%, -50%); top: 50%; left: 50%"
     ></ion-icon>
-  </div>
+  </div> -->
   <div class="p-4 border m-4 border-gray-200 rounded-sm">
     <div class="flex items-center gap-2">
       <ion-icon name="location-outline" class="text-gray-600"></ion-icon>
@@ -80,6 +80,17 @@
           placeholder="Enter building name"
           type="text"
           formControlName="buildingName"
+          required
+        ></ion-input>
+      </ion-item>
+      <ion-item class="rounded-sm">
+        <ion-input
+          label="Street name"
+          label-placement="floating"
+          fill="outline"
+          placeholder="Enter street name"
+          type="text"
+          formControlName="streetName"
           required
         ></ion-input>
       </ion-item>

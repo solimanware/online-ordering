@@ -150,42 +150,42 @@ export class HomePage implements OnInit {
       }
     });
     //Get user location and get nearest branch automatically
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLocation: [number, number] = [
-            position.coords.latitude,
-            position.coords.longitude,
-          ];
-          this.userService.userLocation$ = userLocation;
-          this.homePageService.userLocation$.next(userLocation);
-          console.log(userLocation);
+    // if (navigator.geolocation) {
+    //   navigator.geolocation.getCurrentPosition(
+    //     (position) => {
+    //       const userLocation: [number, number] = [
+    //         position.coords.latitude,
+    //         position.coords.longitude,
+    //       ];
+    //       this.userService.userLocation$ = userLocation;
+    //       this.homePageService.userLocation$.next(userLocation);
+    //       console.log(userLocation);
 
-          this.homePageService
-            .findAndSetNearestBranch(userLocation)
-            .then((res) => {
-              console.log(res.data[0]);
+    //       this.homePageService
+    //         .findAndSetNearestBranch(userLocation)
+    //         .then((res) => {
+    //           console.log(res.data[0]);
 
-              this.homePageService.nearestBranch$.next(res.data[0]);
-            });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          // Use default branch if location access is denied
-          const branches = this.metaData$.value?.branches;
-          if (branches?.length) {
-            this.homePageService.nearestBranch$.next(branches[0]);
-          }
-        }
-      );
-    } else {
-      console.log('Geolocation not supported by this browser');
-      // Use default branch if geolocation is not supported
-      const branches = this.metaData$.value?.branches;
-      if (branches?.length) {
-        this.homePageService.nearestBranch$.next(branches[0]);
-      }
-    }
+    //           this.homePageService.nearestBranch$.next(res.data[0]);
+    //         });
+    //     },
+    //     (error) => {
+    //       console.error('Error getting location:', error);
+    //       // Use default branch if location access is denied
+    //       const branches = this.metaData$.value?.branches;
+    //       if (branches?.length) {
+    //         this.homePageService.nearestBranch$.next(branches[0]);
+    //       }
+    //     }
+    //   );
+    // } else {
+    //   console.log('Geolocation not supported by this browser');
+    //   // Use default branch if geolocation is not supported
+    //   const branches = this.metaData$.value?.branches;
+    //   if (branches?.length) {
+    //     this.homePageService.nearestBranch$.next(branches[0]);
+    //   }
+    // }
   }
 
   handleOTP(otp: number) {
@@ -195,18 +195,23 @@ export class HomePage implements OnInit {
   }
 
   handleOTPResult(res: UserResponse) {
-    this.homePageService.isUserLoggedIn$.next(true);
-    console.log(res);
-    if (!res.name) {
-      this.action = 'name';
-    } else if (!res.addresses.length) {
+    if (res.mobile) {
       this.storage.set('user', res);
-      this.router.navigate([
-        '/',
-        this.restaurantName$.value,
-        'specify-location',
-      ]);
-      this.action = null;
+      this.homePageService.isUserLoggedIn$.next(true);
+      console.log(res);
+      if (!res.name) {
+        this.action = 'name';
+      } else if (!res.addresses.length) {
+        this.storage.set('user', res);
+        this.router.navigate([
+          '/',
+          this.restaurantName$.value,
+          'specify-location',
+        ]);
+        this.action = null;
+      } else {
+        this.action = null;
+      }
     } else {
       this.action = null;
     }
@@ -303,10 +308,6 @@ export class HomePage implements OnInit {
     this.homePageService.isUserLoggedIn$.next(true);
   }
 
-  async presentPhoneVerification() {
-    this.action = 'phone-verification';
-  }
-
   ionWillEnter() {
     this.homePageService.isUserLoggedIn$.next(true);
     this.orderType$.next('delivery');
@@ -332,19 +333,11 @@ export class HomePage implements OnInit {
 
   selectItem(item: Item) {
     this.homePageService.selectedItem$.next(item);
-    console.log(item);
-    this.storage.get('user').then((user) => {
-      if (user) {
-        this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
-      } else {
-        this.login();
-      }
-    });
+    this.router.navigate(['/', this.restaurantName$.value, 'item-detail']);
   }
 
   async login() {
     this.orderType$.next('delivery');
-    this.action = 'phone-verification';
   }
 
   itemChoosen() {

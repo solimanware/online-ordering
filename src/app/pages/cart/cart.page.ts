@@ -12,10 +12,14 @@ import {
 import { CodeInputModule } from 'angular-code-input';
 import { phone } from 'phone';
 import { BehaviorSubject } from 'rxjs';
+import { EnterNameComponent } from 'src/app/components/action-sheets/enter-name/enter-name.component';
+import { OtpComponent } from 'src/app/components/action-sheets/otp/otp.component';
+import { PhoneVerificationComponent } from 'src/app/components/action-sheets/phone-verification/phone-verification.component';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
+import { HomePageService } from 'src/app/services/home-page.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { UserService } from 'src/app/services/user.service';
+import { UserResponse, UserService } from 'src/app/services/user.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 
 export interface CartDisplayedItem extends ItemDetail {
@@ -44,6 +48,9 @@ export interface CartSummary {
     IonFooter,
     CodeInputModule,
     RouterLink,
+    EnterNameComponent,
+    PhoneVerificationComponent,
+    OtpComponent,
   ],
 })
 export class CartPage {
@@ -60,7 +67,8 @@ export class CartPage {
     private userService: UserService,
     private appService: AppService,
     private toastController: ToastController,
-    private storage: StorageService
+    private storage: StorageService,
+    private homePageService: HomePageService
   ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);
@@ -84,6 +92,35 @@ export class CartPage {
   }
   async presentPhoneVerification() {
     this.action = 'phone-verification';
+  }
+
+  handleOTP(otp: number) {
+    console.log(otp);
+    this.otp$.next(otp.toString());
+    this.action = 'otp';
+  }
+
+  handleOTPResult(res: UserResponse) {
+    if (res.mobile) {
+      this.storage.set('user', res);
+      this.homePageService.isUserLoggedIn$.next(true);
+      console.log(res);
+      if (!res.name) {
+        this.action = 'name';
+      } else if (!res.addresses.length) {
+        this.storage.set('user', res);
+        this.router.navigate([
+          '/',
+          this.restaurantName$.value,
+          'specify-location',
+        ]);
+        this.action = null;
+      } else {
+        this.action = null;
+      }
+    } else {
+      this.action = null;
+    }
   }
 
   async sendWhatsAppOTP(phoneNumber: string) {

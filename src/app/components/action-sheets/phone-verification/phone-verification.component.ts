@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { phone } from 'phone';
 import { BehaviorSubject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -12,22 +13,30 @@ import { UserService } from 'src/app/services/user.service';
   standalone: true,
   imports: [FormsModule, CommonModule],
 })
-export class PhoneVerificationComponent implements OnInit {
+export class PhoneVerificationComponent {
   phoneNumber$ = this.userService.userPhoneNumber$;
   @Output() otp: EventEmitter<number> = new EventEmitter();
 
   isPhoneValid = new BehaviorSubject<boolean>(true);
   showError = false;
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) {
+    this.setupPhoneValidation();
+  }
 
-  ngOnInit() {}
+  private setupPhoneValidation() {
+    this.phoneNumber$.pipe(debounceTime(1000)).subscribe((phoneNumber) => {
+      if (phoneNumber) {
+        const phoneNumberFormatted = phone(phoneNumber, { country: 'EG' });
+        this.isPhoneValid.next(phoneNumberFormatted.isValid);
+        this.showError = !phoneNumberFormatted.isValid;
+        console.log(phoneNumberFormatted);
+      }
+    });
+  }
 
   validatePhoneNumber(phoneNumber: string) {
-    const phoneNumberFormatted = phone(phoneNumber, { country: 'EG' });
-    this.isPhoneValid.next(phoneNumberFormatted.isValid);
-    this.showError = !phoneNumberFormatted.isValid;
-    console.log(phoneNumberFormatted);
+    this.phoneNumber$.next(phoneNumber);
   }
 
   sendWhatsAppOTP(phoneNumber: string) {

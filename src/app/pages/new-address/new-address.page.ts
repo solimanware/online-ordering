@@ -34,6 +34,7 @@ import { Map } from 'maplibre-gl';
 import { Address, Customer } from 'src/app/interfaces/customer';
 import { AppService } from 'src/app/services/app.service';
 import { CustomerService } from 'src/app/services/customer.service';
+import { HomePageService } from 'src/app/services/home-page.service';
 import { style } from '../specify-location/specify-location.page';
 import { LocationService } from './../../services/location.service';
 import { UserService } from './../../services/user.service';
@@ -80,6 +81,7 @@ export class NewAddressPage {
 
   addressForm: FormGroup = new FormGroup({
     buildingName: new FormControl(''),
+    streetName: new FormControl(''),
     aptNo: new FormControl(''),
     floor: new FormControl(''),
     name: new FormControl(this.userService.userName$.value),
@@ -93,7 +95,8 @@ export class NewAddressPage {
     private userService: UserService,
     private appService: AppService,
     private router: Router,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private homePageService: HomePageService
   ) {
     addIcons({
       arrowBackOutline,
@@ -116,7 +119,34 @@ export class NewAddressPage {
         name: name,
       });
     });
+
     console.log('user phone number', this.userService.userPhoneNumber$.value);
+  }
+
+  async ngOnInit() {
+    this.homePageService.userLocation$.subscribe(async (location) => {
+      const response = await fetch(
+        `https://places.geo.eu-west-1.amazonaws.com/v2/reverse-geocode?key=v1.public.eyJqdGkiOiI1OWZkZjQ4My1lZTI0LTRiNzUtYTUxOS1mY2M2NTVhZjNjY2EifdHxJgL-Gw-jZjzFQa1QwFY8Ag79JkmI4QB09vWqzMvgrr14KNPIMv-gSIdaWbROoDYN0-Q8m1-ow5oQ5E3L1kmFDwI0rLHooetc_Uu5OtSCEvXKkPO1688_5XGFIXuf_DgyqGzqF9UihjWEAFXC9BzRXdc_iMYDDy0FcAgjnN8hG50apca6Jc_Putfxu8vGHm6EuO9P2KvPwB-fLf5pCg3xq3P7Xq0qd1uIFpu9DCS-hBebCDfco249oHcK3KMJAQog1rmcUx1g3yR9ELlhulILqgTJnFmuKpkfgXGimaCqq6ShUaYPadz-TUyUOsYJkZeZE7qHK22v_OO5skweWMk.ZGQzZDY2OGQtMWQxMy00ZTEwLWIyZGUtOGVjYzUzMjU3OGE4`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json', // Add this header
+          },
+          body: JSON.stringify({
+            QueryPosition: location.reverse(),
+          }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          this.addressForm.patchValue({
+            streetName: data.ResultItems[0].Address.Label,
+          });
+        })
+        .catch((error) => {
+          console.error('Error fetching address:', error);
+        });
+    });
   }
 
   onMapLoaded(event: Map) {

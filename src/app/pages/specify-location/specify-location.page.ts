@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
@@ -28,7 +28,6 @@ import {
 } from 'rxjs';
 import { AppService } from 'src/app/services/app.service';
 import { HomePageService } from 'src/app/services/home-page.service';
-
 const awsRegion = 'eu-west-1';
 const mapStyle = 'Standard';
 const apiKey =
@@ -49,6 +48,7 @@ export const style = `https://maps.geo.${awsRegion}.amazonaws.com/v2/styles/${ma
     RouterLink,
     NgFor,
     NgIf,
+    AsyncPipe,
   ],
 })
 export class SpecifyLocationPage {
