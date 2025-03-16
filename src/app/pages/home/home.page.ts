@@ -143,6 +143,8 @@ export class HomePage implements OnInit {
         console.log('user', user);
 
         this.isUserLoggedIn$.next(true);
+        this.userService.userPhoneNumber$.next(user.mobile);
+        this.userService.userName$.next(user.name);
       } else {
         console.log('user not found');
 
