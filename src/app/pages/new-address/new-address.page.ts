@@ -5,6 +5,7 @@ import {
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -78,16 +79,23 @@ export class NewAddressPage {
   mapCenter: [number, number] = [31.2357, 30.0444];
   selectedSegment = 'apartment';
   restaurantName$ = this.appService.restaurantName$;
-
+  addressLabel: string = '';
+  isSubmitted = false;
   addressForm: FormGroup = new FormGroup({
-    buildingName: new FormControl(''),
-    streetName: new FormControl(''),
-    aptNo: new FormControl(''),
-    floor: new FormControl(''),
-    name: new FormControl(this.userService.userName$.value),
+    buildingName: new FormControl('', Validators.required),
+    streetName: new FormControl('', Validators.required),
+    aptNo: new FormControl('', Validators.required),
+    floor: new FormControl('', Validators.required),
+    name: new FormControl(
+      this.userService.userName$.value,
+      Validators.required
+    ),
     additionalDirections: new FormControl(''),
-    phoneNumber: new FormControl(this.userService.userPhoneNumber$.value),
-    addressLabel: new FormControl(''),
+    phoneNumber: new FormControl(
+      this.userService.userPhoneNumber$.value,
+      Validators.required
+    ),
+    addressLabel: new FormControl('', Validators.required),
   });
 
   constructor(
@@ -139,6 +147,7 @@ export class NewAddressPage {
       )
         .then((response) => response.json())
         .then((data) => {
+          this.addressLabel = data.ResultItems[0].Address.Label;
           this.addressForm.patchValue({
             streetName: data.ResultItems[0].Address.Label,
           });
@@ -163,49 +172,58 @@ export class NewAddressPage {
   }
 
   saveAddress() {
-    const address: Address = {
-      name: this.addressForm.value.name,
-      street: '',
-      street2: '',
-      city: 'Cairo',
-      state: '',
-      postalCode: '',
-      building: this.addressForm.value.buildingName,
-      floor: '',
-      flat: '',
-      landmark: '',
-      country: 'Egypt',
-      coordinates: {
-        latitude: 0,
-        longitude: 0,
-      },
-      type: 'residential',
-    };
-    const customer: Customer = {
-      name: this.addressForm.value.name,
-      email: this.addressForm.value.email,
-      mobile: this.addressForm.value.phoneNumber,
-      addresses: [address],
-      customerType: 'individual',
-      status: 'active',
-      notes: '',
-    };
-    console.log('Address form data:', this.addressForm);
-    fetch(
-      `https://api-test.tappya.com/customer/create-customer?account=${this.restaurantName$.value}`,
-      {
-        method: 'POST',
-        body: JSON.stringify(customer),
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        this.customerService.customerId$.next(data.data);
-        this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
-      })
-      .catch((error) => {
-        console.error('Error saving address:', error);
+    this.isSubmitted = true;
+    if (this.addressForm.valid) {
+      const address: Address = {
+        name: this.addressForm.value.name,
+        street: '',
+        street2: '',
+        city: 'Cairo',
+        state: '',
+        postalCode: '',
+        building: this.addressForm.value.buildingName,
+        floor: '',
+        flat: '',
+        landmark: '',
+        country: 'Egypt',
+        coordinates: {
+          latitude: 0,
+          longitude: 0,
+        },
+        type: 'residential',
+      };
+      const customer: Customer = {
+        name: this.addressForm.value.name,
+        email: this.addressForm.value.email,
+        mobile: this.addressForm.value.phoneNumber,
+        addresses: [address],
+        customerType: 'individual',
+        status: 'active',
+        notes: '',
+      };
+      console.log('Address form data:', this.addressForm);
+      fetch(
+        `https://api-test.tappya.com/customer/create-customer?account=${this.restaurantName$.value}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(customer),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          this.customerService.customerId$.next(data.data);
+          this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
+        })
+        .catch((error) => {
+          console.error('Error saving address:', error);
+        });
+    } else {
+      // Mark all fields as touched to trigger validation display
+      Object.keys(this.addressForm.controls).forEach((key) => {
+        const control = this.addressForm.get(key);
+        control?.markAsTouched();
       });
+    }
   }
 }

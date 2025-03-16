@@ -38,7 +38,7 @@
       <ion-icon name="location-outline" class="text-gray-600"></ion-icon>
       <p class="text-gray-600">Area</p>
     </div>
-    <div class="flex items-center gap-2 text-gray-600">Giza- Elomraneya 14</div>
+    <div class="flex items-center gap-2 text-gray-600">{{ addressLabel }}</div>
   </div>
   <div class="m-4">
     <ion-segment
@@ -74,67 +74,104 @@
       <!-- Building name -->
       <ion-item class="rounded-sm">
         <ion-input
-          label="Building name"
+          label="Building name *"
           label-placement="floating"
           fill="outline"
           placeholder="Enter building name"
           type="text"
           formControlName="buildingName"
-          required
+          [required]="true"
         ></ion-input>
       </ion-item>
+      <div
+        class="error-message"
+        *ngIf="isSubmitted && addressForm.get('buildingName')?.errors"
+      >
+        Building name is required
+      </div>
+
+      <!-- Street name -->
       <ion-item class="rounded-sm">
         <ion-input
-          label="Street name"
+          label="Street name *"
           label-placement="floating"
           fill="outline"
           placeholder="Enter street name"
           type="text"
           formControlName="streetName"
-          required
+          [required]="true"
         ></ion-input>
       </ion-item>
+      <div
+        class="error-message"
+        *ngIf="isSubmitted && addressForm.get('streetName')?.errors"
+      >
+        Street name is required
+      </div>
 
       <!-- Apt no and Floor -->
       <div class="grid grid-cols-2 gap-4">
-        <ion-item class="rounded-sm">
-          <ion-input
-            label="Apt.no"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter apartment number"
-            type="text"
-            formControlName="aptNo"
-            required
-          ></ion-input>
-        </ion-item>
+        <div>
+          <ion-item class="rounded-sm">
+            <ion-input
+              label="Apt.no *"
+              label-placement="floating"
+              fill="outline"
+              placeholder="Enter apartment number"
+              type="text"
+              formControlName="aptNo"
+              [required]="true"
+            ></ion-input>
+          </ion-item>
+          <div
+            class="error-message"
+            *ngIf="isSubmitted && addressForm.get('aptNo')?.errors"
+          >
+            Apartment number is required
+          </div>
+        </div>
 
-        <ion-item class="rounded-sm">
-          <ion-input
-            label="Floor (optional)"
-            label-placement="floating"
-            fill="outline"
-            placeholder="Enter floor number"
-            type="text"
-            formControlName="floor"
-          ></ion-input>
-        </ion-item>
+        <div>
+          <ion-item class="rounded-sm">
+            <ion-input
+              label="Floor *"
+              label-placement="floating"
+              fill="outline"
+              placeholder="Enter floor number"
+              type="text"
+              formControlName="floor"
+              [required]="true"
+            ></ion-input>
+          </ion-item>
+          <div
+            class="error-message"
+            *ngIf="isSubmitted && addressForm.get('floor')?.errors"
+          >
+            Floor number is required
+          </div>
+        </div>
       </div>
 
       <!-- Name -->
       <ion-item class="rounded-sm">
         <ion-input
-          label="Name"
+          label="Name *"
           label-placement="floating"
           fill="outline"
           placeholder="Enter your name"
           type="text"
           formControlName="name"
-          required
+          [required]="true"
         ></ion-input>
       </ion-item>
+      <div
+        class="error-message"
+        *ngIf="isSubmitted && addressForm.get('name')?.errors"
+      >
+        Name is required
+      </div>
 
-      <!-- Additional directions -->
+      <!-- Additional directions (optional) -->
       <ion-item class="rounded-sm">
         <ion-input
           label="Additional direction (optional)"
@@ -149,35 +186,46 @@
       <!-- Phone number -->
       <ion-item class="rounded-sm">
         <ion-input
-          label="Phone number"
+          label="Phone number *"
           label-placement="floating"
           fill="outline"
           placeholder="Enter phone number"
           type="tel"
           formControlName="phoneNumber"
-          required
+          [required]="true"
         ></ion-input>
       </ion-item>
+      <div
+        class="error-message"
+        *ngIf="isSubmitted && addressForm.get('phoneNumber')?.errors"
+      >
+        Phone number is required
+      </div>
 
       <!-- Address label -->
       <ion-item class="rounded-sm">
         <ion-input
-          label="Address label (optional)"
+          label="Address label *"
           label-placement="floating"
           fill="outline"
           placeholder="e.g. Home, Work, etc."
           type="text"
           formControlName="addressLabel"
+          [required]="true"
         ></ion-input>
       </ion-item>
+      <div
+        class="error-message"
+        *ngIf="isSubmitted && addressForm.get('addressLabel')?.errors"
+      >
+        Address label is required
+      </div>
     </div>
 
     <button
-      expand="block"
-      color="danger"
       type="submit"
-      class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full"
-      (click)="saveAddress()"
+      class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full disabled:opacity-50"
+      [disabled]="isSubmitted && !addressForm.valid"
     >
       Save Address
     </button>
