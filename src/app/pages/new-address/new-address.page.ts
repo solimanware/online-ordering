@@ -147,6 +147,7 @@ export class NewAddressPage {
       )
         .then((response) => response.json())
         .then((data) => {
+          this.userService.userAddress$.next(data);
           this.addressLabel = data.ResultItems[0].Address.Label;
           this.addressForm.patchValue({
             streetName: data.ResultItems[0].Address.Label,

@@ -40,6 +40,62 @@ export interface Coordinates {
   longitude: string;
 }
 
+export interface AddressResponse {
+  ResultItems: ResultItem[];
+}
+
+export interface ResultItem {
+  PlaceId: string;
+  PlaceType: string;
+  Title: string;
+  Address: Address;
+  Position: number[];
+  Distance: number;
+  MapView: number[];
+  AccessPoints: AccessPoint[];
+}
+
+export interface Address {
+  Label: string;
+  Country: Country;
+  Region: Region;
+  SubRegion: SubRegion;
+  Locality: string;
+  District: string;
+  PostalCode: string;
+  Street: string;
+  StreetComponents: StreetComponent[];
+  AddressNumber: string;
+}
+
+export interface Country {
+  Code2: string;
+  Code3: string;
+  Name: string;
+}
+
+export interface Region {
+  Code: string;
+  Name: string;
+}
+
+export interface SubRegion {
+  Name: string;
+}
+
+export interface StreetComponent {
+  BaseName: string;
+  Type: string;
+  TypePlacement: string;
+  TypeSeparator: string;
+  Prefix: string;
+  Language: string;
+}
+
+export interface AccessPoint {
+  Position: number[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -48,7 +104,11 @@ export class UserService {
   userLocation$: [number, number] | null = null;
   userPhoneNumber$: BehaviorSubject<string> = new BehaviorSubject<string>('');
   userName$: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  userAddress$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  userAddress$: BehaviorSubject<AddressResponse> =
+    new BehaviorSubject<AddressResponse>({
+      ResultItems: [],
+    });
+
   private userId$ = new BehaviorSubject<string | null>(null);
   userAddresses$ = new BehaviorSubject<Address[]>([]);
 

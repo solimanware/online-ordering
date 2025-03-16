@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CheckoutBody } from '../interfaces/checkout';
 import { CartService } from './cart.service';
 import { CustomerService } from './customer.service';
+import { HomePageService } from './home-page.service';
 import { UserService } from './user.service';
 
 export interface ModifierCategoryId {
@@ -25,7 +26,8 @@ export class CheckOutService {
   constructor(
     private userService: UserService,
     private cartService: CartService,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private homePageService: HomePageService
   ) {}
 
   getCheckoutBody() {
@@ -67,18 +69,27 @@ export class CheckOutService {
       pushNotificationToken: '',
       deliveryAddress: {
         phoneNumber: this.userService.userPhoneNumber$.value,
-        street: '19 Maadi Street',
+        street:
+          this.userService.userAddress$.value.ResultItems[0].Address.Street,
         street2: '',
-        city: 'Cairo',
-        state: 'CRO',
-        postalCode: '',
-        building: '13',
-        landmark: 'No Landmark',
+        city: this.userService.userAddress$.value.ResultItems[0].Address
+          .Locality,
+        state:
+          this.userService.userAddress$.value.ResultItems[0].Address.District,
+        postalCode:
+          this.userService.userAddress$.value.ResultItems[0].Address.PostalCode,
+        building:
+          this.userService.userAddress$.value.ResultItems[0].Address
+            .AddressNumber,
+        landmark:
+          this.userService.userAddress$.value.ResultItems[0].Address.Label,
         flatNumber: '1',
-        country: 'Egypt',
+        country:
+          this.userService.userAddress$.value.ResultItems[0].Address.Country
+            .Name,
         coordinates: {
-          latitude: 29.9657005,
-          longitude: 31.2675568,
+          latitude: this.homePageService.userLocation$.value[0],
+          longitude: this.homePageService.userLocation$.value[1],
         },
         type: 'residential',
         isPrimary: true,
@@ -95,7 +106,7 @@ export class CheckOutService {
           })),
         })),
         modifierCategoryIds: modifierCategoryIds,
-        note: 'Take care',
+        note: '',
       })),
       payment: {
         status: 'PAID',
