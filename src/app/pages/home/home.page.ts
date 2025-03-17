@@ -99,6 +99,8 @@ export class HomePage implements OnInit {
   name$: BehaviorSubject<string> = this.userService.userName$;
   action: 'phone-verification' | 'name' | 'otp' | null = null;
   otp$: BehaviorSubject<string> = new BehaviorSubject('');
+  outOfStockItems$ = new BehaviorSubject<string[]>([]);
+
   constructor(
     private homePageService: HomePageService,
     private toastController: ToastController,
@@ -135,6 +137,7 @@ export class HomePage implements OnInit {
         .then((res) => res.json())
         .then((data) => {
           console.log(data);
+          this.outOfStockItems$.next(data);
         });
     });
     //See if user is logged in
@@ -194,6 +197,13 @@ export class HomePage implements OnInit {
     console.log(otp);
     this.otp$.next(otp.toString());
     this.action = 'otp';
+  }
+
+  isOutOfStock(itemId: string): boolean {
+    if (this.outOfStockItems$.value.length > 0) {
+      return this.outOfStockItems$?.value?.includes(itemId) || false;
+    }
+    return false;
   }
 
   handleOTPResult(res: UserResponse) {
