@@ -17,6 +17,7 @@ import { OtpComponent } from 'src/app/components/action-sheets/otp/otp.component
 import { PhoneVerificationComponent } from 'src/app/components/action-sheets/phone-verification/phone-verification.component';
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
+import { CheckOutService } from 'src/app/services/check-out.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserResponse, UserService } from 'src/app/services/user.service';
@@ -61,6 +62,8 @@ export class CartPage {
   name$: BehaviorSubject<string> = this.userService.userName$;
   restaurantName$ = this.appService.restaurantName$;
   otp$: BehaviorSubject<string> = new BehaviorSubject('');
+  notes$ = this.checkOutService.notes$;
+
   constructor(
     private cartService: CartService,
     private router: Router,
@@ -68,7 +71,8 @@ export class CartPage {
     private appService: AppService,
     private toastController: ToastController,
     private storage: StorageService,
-    private homePageService: HomePageService
+    private homePageService: HomePageService,
+    private checkOutService: CheckOutService
   ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);

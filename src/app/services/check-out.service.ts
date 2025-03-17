@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { CheckoutBody } from '../interfaces/checkout';
 import { CartService } from './cart.service';
 import { CustomerService } from './customer.service';
@@ -22,6 +23,7 @@ export interface Item {
 export class CheckOutService {
   checkoutBody: CheckoutBody;
   paymentSummary$ = this.cartService.paymentSummary$;
+  notes$ = new BehaviorSubject<string>('');
 
   constructor(
     private userService: UserService,
@@ -106,7 +108,7 @@ export class CheckOutService {
           })),
         })),
         modifierCategoryIds: modifierCategoryIds,
-        note: '',
+        note: this.notes$.value,
       })),
       payment: {
         status: 'PAID',

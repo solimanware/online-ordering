@@ -70,6 +70,8 @@
           rows="3"
           placeholder="Add any special instructions for your order..."
           class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+          [ngModel]="notes$ | async"
+          (ngModelChange)="notes$.next($event)"
         ></textarea>
       </div>
     </div>
