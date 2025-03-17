@@ -61,6 +61,10 @@ ion-textarea {
     --border-color: #dc2626;
   }
 }
+input:focus {
+  --tw-ring-color: none;
+  --tw-ring-shadow: none;
+}
 
 ion-button {
   --background: #dc2626;
@@ -74,4 +78,9 @@ ion-button {
   color: #dc2626;
   font-size: 12px;
   margin: 4px 0 8px 16px;
+}
+
+textarea:focus,
+input:focus {
+  outline: 0;
 }
