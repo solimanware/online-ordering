@@ -57,12 +57,12 @@
       class="w-10 h-10 rounded-full object-cover"
     />
     <h1 class="ml-3 text-xl font-bold text-gray-800">
-      {{(nearestBranch$|async)?.name}}
+      {{(nearestBranch$|async)?.branchName}}
     </h1>
   </div>
   <div class="resturant-details flex items-center justify-between text-sm">
     <div class="flex justify-center items-center ml-2">
-      <p>{{nearestBranch$.value?.address}}</p>
+      <p>{{nearestBranch$.value?.areaName}}</p>
       <button class="ml-4 bg-green-300 px-4 py-1 rounded-full text-green-900">
         Open
       </button>

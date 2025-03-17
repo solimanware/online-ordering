@@ -130,7 +130,7 @@ export class HomePage implements OnInit {
     console.log('I am here');
     this.metaData$.subscribe((metaData) => {
       fetch(
-        `https://api-test.tappya.com/branch/${this.metaData$.value.branches[0].id}/pos/${this.metaData$.value.branches[0].posId}/out-of-stock?account=${this.appService.restaurantName$.value}`
+        `https://api-test.tappya.com/branch/${this.metaData$.value.branches[0].branchId}/pos/${this.metaData$.value.branches[0].posId}/out-of-stock?account=${this.appService.restaurantName$.value}`
       )
         .then((res) => res.json())
         .then((data) => {

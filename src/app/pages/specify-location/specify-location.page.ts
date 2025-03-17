@@ -61,7 +61,8 @@ export class SpecifyLocationPage {
   restaurantName$ = this.appService.restaurantName$;
   searchResults: any[] = [];
   searchText: string = '';
-  disabled: boolean = false;
+  disabled: boolean = true;
+  nearestBranch$ = this.homePageService.nearestBranch$;
 
   private locationClient = new Location({
     region: awsRegion,
@@ -90,14 +91,6 @@ export class SpecifyLocationPage {
   }
 
   locationChoosen() {
-    //TODO: find nearest branch based on user location
-    this.homePageService.nearestBranch$.next(
-      this.homePageService.metaData$.value.branches[0]
-    );
-    console.log(
-      'fake nearest branch',
-      this.homePageService.metaData$.value.branches[0]
-    );
     if (this.returnTo === 'home') {
       this.router.navigate(['/', this.restaurantName$.value, 'home']);
     } else if (this.returnTo === 'item-detail') {
@@ -128,11 +121,14 @@ export class SpecifyLocationPage {
       .subscribe((branch: any) => {
         console.log('branch', branch);
         this.disabled = !branch.data.length;
+        this.nearestBranch$.next(branch.data[0]);
       });
   }
 
   onMapMoveEnd(event: any) {
-    const center = this.map.getCenter();
+    let center = this.map.getCenter();
+    center.lat = parseFloat(center.lat.toFixed(6));
+    center.lng = parseFloat(center.lng.toFixed(6));
     this.homePageService.userLocation$.next([center.lat, center.lng]);
     this.mapMoveSubject.next([center.lat, center.lng]);
   }

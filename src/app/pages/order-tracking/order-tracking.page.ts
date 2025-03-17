@@ -115,7 +115,7 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Get initial order status
-    const branchId = this.homePageService.metaData$.value?.branches[0].id; // Get from route params or service
+    const branchId = this.homePageService.metaData$.value?.branches[0].branchId; // Get from route params or service
     const posId = this.homePageService.metaData$.value?.branches[0].posId; // Get from route params or service
     const accountId = this.appService.restaurantName$.value; // Get from route params or service
     const orderId = this.router.url.split('/').pop(); // Get from route params or service
