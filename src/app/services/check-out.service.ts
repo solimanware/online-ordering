@@ -123,7 +123,9 @@ export class CheckOutService {
       },
       orderNote: 'Hello',
       subtotal: this.paymentSummary$.value.subtotal,
-      shippingCost: 0,
+      shippingCost:
+        this.homePageService.nearestBranch$.value.price ||
+        this.homePageService.nearestBranch$.value.deliveryFees,
       discountAmount: 0,
       taxAmount: this.paymentSummary$.value.tax,
       total: this.paymentSummary$.value.total,
