@@ -26,6 +26,7 @@ import {
   Subscriber,
   switchMap,
 } from 'rxjs';
+import { Branch } from 'src/app/interfaces/metaData';
 import { AppService } from 'src/app/services/app.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 const awsRegion = 'eu-west-1';
@@ -33,6 +34,7 @@ const mapStyle = 'Standard';
 const apiKey =
   'v1.public.eyJqdGkiOiJlNzhmNzczMS1iN2JiLTQzNmYtYTI0ZS0xZDIzODI2ZWUwZjkifRpvdITR-1CVNbYwlc1aaEitntKMMpQXaX3rg1myP0ZwV94dLRkniQNpQYzw19kOKqztasNhSFCcReeI3GEANGlvcX2J0XmzSSPonvB-3QOMhdaww7t_TxrUDfqUEI72uayQcno3EpZLkNDlM2xdzD265YU3DbbbcKn6lqE2SS_ho4O4NUKu1TjqDfEeB5APJT2GJ0tzh53m_rxS_KoHIZrlD5hbXb6Ma7pCUENZspPDE7fXisPDTPYY9zlqhBvDhIVN8Lot2WXhLRX87r9-5thfKlWIDs6ZkzHX71uLHGc1PF_GmMl2-QLbk0ZUnF4voWuBuZaSRgypwrFfgqRWySM.ZGQzZDY2OGQtMWQxMy00ZTEwLWIyZGUtOGVjYzUzMjU3OGE4';
 export const style = `https://maps.geo.${awsRegion}.amazonaws.com/v2/styles/${mapStyle}/descriptor?key=${apiKey}`;
+
 @Component({
   selector: 'app-specify-location',
   templateUrl: './specify-location.page.html',
@@ -63,6 +65,7 @@ export class SpecifyLocationPage {
   searchText: string = '';
   disabled: boolean = true;
   nearestBranch$ = this.homePageService.nearestBranch$;
+  branches: Branch[] = [];
 
   private locationClient = new Location({
     region: awsRegion,
@@ -123,6 +126,27 @@ export class SpecifyLocationPage {
         this.disabled = !branch.data.length;
         this.nearestBranch$.next(branch.data[0]);
       });
+
+    this.homePageService.metaData$.subscribe((metaData) => {
+      this.branches = metaData.branches;
+      console.log('branches', this.branches);
+    });
+  }
+
+  selectBranch(branch: Branch) {
+    console.log('branch', branch);
+    this.homePageService.nearestBranch$.next(branch);
+    this.homePageService.isPickupFlow$.next(true);
+    this.router.navigate(['/', this.restaurantName$.value, 'home']);
+  }
+
+  onSegmentChange(event: any) {
+    console.log('segment', event.detail.value);
+    if (event.detail.value === 'delivery') {
+      this.selectedSegment = 'delivery';
+    } else {
+      this.selectedSegment = 'pickup';
+    }
   }
 
   onMapMoveEnd(event: any) {

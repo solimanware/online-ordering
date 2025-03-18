@@ -2,100 +2,88 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
   ion-searchbar {
     --box-shadow: none;
     border: 1px solid #c3c3c5;
     border-radius: 4px;
     height: 40px;
-    &::ng-deep {
-      input.searchbar-input.sc-ion-searchbar-md {
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        padding-left: 16px !important;
-      }
-      .searchbar-search-icon.sc-ion-searchbar-md {
-        top: 5px;
-        right: 16px !important;
-        left: auto !important;
-      }
+
+    ::ng-deep input.searchbar-input.sc-ion-searchbar-md {
+      padding: 0 16px !important;
+    }
+
+    ::ng-deep .searchbar-search-icon.sc-ion-searchbar-md {
+      top: 5px;
+      right: 16px;
+      left: auto;
     }
   }
 }
 
-/* For Webkit-based browsers (Chrome, Safari and Opera) */
+/* Hide scrollbar for Webkit-based browsers (Chrome, Safari, Opera) */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* For IE, Edge and Firefox */
+/* Hide scrollbar for IE, Edge, and Firefox */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+
 ion-segment-button {
-  --indicator-color: transparent !important;
-  --indicator-color-checked: transparent !important;
+  --indicator-color: transparent;
+  --indicator-color-checked: transparent;
+  --background: #fde4e4;
+  color: #d80e0e;
+  min-width: 100px;
+}
+
+ion-segment-button.segment-button-checked {
+  background-color: #d80e0e;
+  color: #fff;
+}
+
+ion-segment-button.segment-button-checked ion-label {
+  color: #fff;
+}
+
+.delivery-segment,
+.pickup-segment {
+  padding: 0.25rem 0;
+  margin: 0;
+  min-width: 80px;
+}
+
+.delivery-segment {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.pickup-segment {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+ion-segment {
+  --border-radius: 8px;
+}
+
+ion-segment-button::part(indicator-background) {
+  background-color: #d80e0e;
 }
 
 .fixed-content {
   transition: all 0.3s ease;
   z-index: 2;
-
-  &.sticky {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
 }
 
-// Add padding to prevent content jump when fixed-content becomes sticky
+.fixed-content.sticky {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Prevent content jump when fixed-content becomes sticky
 .fixed-content.sticky + .items {
-  margin-top: 140px; // Adjust this value based on your fixed-content height
-}
-
-ion-segment-button.segment-button-checked {
-  background-color: #d80e0e !important;
-}
-ion-segment-button {
-  background-color: #fde4e4 !important;
-  color: #d80e0e !important;
-}
-
-ion-segment-button.segment-button-checked ion-label {
-  color: #fff !important;
-}
-
-.delivery-segment {
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  margin: 0;
-  min-width: 80px;
-}
-
-.pickup-segment {
-  border-top-left-radius: 0 !important;
-  border-bottom-left-radius: 0 !important;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  margin: 0;
-  min-width: 80px;
-}
-
-.delivery-segment.segment-button-checked {
-  background-color: #d80e0e !important;
-  color: #fff !important;
-}
-
-.pickup-segment.segment-button-checked {
-  background-color: #d80e0e !important;
-  color: #fff !important;
-}
-
-// Add this to ensure the segments are touching
-ion-segment {
-  --border-radius: 8px;
-}
-
-ion-segment-button {
-  min-width: 100px;
+  margin-top: 140px; // Adjust based on actual height
 }

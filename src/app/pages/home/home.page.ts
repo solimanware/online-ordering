@@ -101,6 +101,7 @@ export class HomePage implements OnInit {
   action: 'phone-verification' | 'name' | 'otp' | null = null;
   otp$: BehaviorSubject<string> = new BehaviorSubject('');
   outOfStockItems$ = new BehaviorSubject<string[]>([]);
+  orderType: OrderType = 'delivery';
 
   constructor(
     private homePageService: HomePageService,
@@ -130,6 +131,10 @@ export class HomePage implements OnInit {
   }
 
   ngOnInit() {
+    this.orderType$.subscribe((orderType) => {
+      console.log('order type', orderType);
+      this.orderType = orderType;
+    });
     console.log('I am here');
     this.metaData$.subscribe((metaData) => {
       if (metaData && metaData.branches.length > 0) {

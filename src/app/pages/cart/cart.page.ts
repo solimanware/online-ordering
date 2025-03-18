@@ -87,12 +87,18 @@ export class CartPage {
   }
 
   checkout() {
-    this.storage.get('user').then((user) => {
-      if (user) {
-        this.router.navigate(['/', this.restaurantName$.value, 'new-address']);
-      } else {
-        this.presentPhoneVerification();
-      }
+    this.homePageService.isPickupFlow$.subscribe((isPickupFlow) => {
+      this.storage.get('user').then((user) => {
+        if (user && !isPickupFlow) {
+          this.router.navigate([
+            '/',
+            this.restaurantName$.value,
+            'new-address',
+          ]);
+        } else {
+          this.presentPhoneVerification();
+        }
+      });
     });
   }
   async presentPhoneVerification() {
@@ -105,26 +111,31 @@ export class CartPage {
     this.action = 'otp';
   }
 
-  handleOTPResult(res: HttpResponse<UserResponse>) {
-    if (res.body?.mobile) {
-      this.storage.set('user', res.body);
+  async handleOTPResult(res: HttpResponse<UserResponse>) {
+    console.log('response', res);
+
+    if (res.status === 201) {
+      this.action = 'name';
       this.homePageService.isUserLoggedIn$.next(true);
-      console.log(res.body);
-      if (!res.body?.name) {
-        this.action = 'name';
-      } else if (!res.body?.addresses.length) {
-        this.storage.set('user', res.body);
-        this.router.navigate([
-          '/',
-          this.restaurantName$.value,
-          'specify-location',
-        ]);
-        this.action = null;
-      } else {
-        this.action = null;
-      }
-    } else {
+      //TODO: choose location if no location is set
+    } else if (res.status === 200) {
+      this.homePageService.isUserLoggedIn$.next(true);
       this.action = null;
+      const user = await res.body;
+      this.storage.set('user', res.body);
+      if (
+        !user?.addresses?.length &&
+        !this.homePageService.isPickupFlow$.value
+      ) {
+        this.router.navigate(
+          ['/', this.restaurantName$.value, 'specify-location'],
+          {
+            queryParams: { returnTo: 'home' },
+          }
+        );
+      } else if (this.homePageService.isPickupFlow$.value) {
+        this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
+      }
     }
   }
 

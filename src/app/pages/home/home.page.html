@@ -9,8 +9,8 @@
       <div class="flex justify-between items-center py-1">
         <div class="left">
           <ion-segment
-            [ngModel]="(orderType$ | async)"
-            (ngModelChange)="onOrderTypeChange($event)"
+            value="delivery"
+            (ionChange)="onOrderTypeChange($event)"
             class="bg-white"
           >
             <ion-segment-button value="delivery" class="delivery-segment">

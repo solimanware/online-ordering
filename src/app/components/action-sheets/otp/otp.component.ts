@@ -31,8 +31,10 @@ export class OtpComponent implements OnInit {
   verifyOTP(phoneNumber: string, otp: string) {
     console.log(phoneNumber, otp);
     this.userService.verifyOTP(phoneNumber, otp).subscribe({
-      next: (res) => {
+      next: (res: HttpResponse<UserResponse>) => {
         console.log(res);
+        this.userService.userName$.next(res.body?.name);
+        this.userService.userPhoneNumber$.next(res.body?.mobile);
         this.result.emit(res);
       },
       error: (err) => {

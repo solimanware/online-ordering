@@ -58,7 +58,8 @@ export class CheckOutPage implements OnInit {
   restaurantName$ = this.appService.restaurantName$;
   address$ = this.userService.userAddress$;
   userNumber$ = this.userService.userPhoneNumber$;
-
+  isPickupFlow$ = this.homePageService.isPickupFlow$;
+  nearestBranch$ = this.homePageService.nearestBranch$;
   constructor(
     private homePageService: HomePageService,
     private locationService: LocationService,
