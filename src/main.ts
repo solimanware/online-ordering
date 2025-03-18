@@ -10,6 +10,7 @@ import {
   provideIonicAngular,
 } from '@ionic/angular/standalone';
 
+import { provideHttpClient } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import player from 'lottie-web';
@@ -37,5 +38,6 @@ bootstrapApplication(AppComponent, {
       provide: 'lottiePlayerFactory',
       useValue: playerFactory,
     },
+    provideHttpClient(),
   ],
 });

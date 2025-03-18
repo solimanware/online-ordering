@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -104,15 +105,15 @@ export class CartPage {
     this.action = 'otp';
   }
 
-  handleOTPResult(res: UserResponse) {
-    if (res.mobile) {
-      this.storage.set('user', res);
+  handleOTPResult(res: HttpResponse<UserResponse>) {
+    if (res.body?.mobile) {
+      this.storage.set('user', res.body);
       this.homePageService.isUserLoggedIn$.next(true);
-      console.log(res);
-      if (!res.name) {
+      console.log(res.body);
+      if (!res.body?.name) {
         this.action = 'name';
-      } else if (!res.addresses.length) {
-        this.storage.set('user', res);
+      } else if (!res.body?.addresses.length) {
+        this.storage.set('user', res.body);
         this.router.navigate([
           '/',
           this.restaurantName$.value,

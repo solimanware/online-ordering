@@ -37,9 +37,12 @@
       <img src="assets/icons/location-pin.svg" class="text-gray-600" />
       <p class="text-gray-600">Area</p>
     </div>
-    <div class="flex items-center gap-2 text-gray-600">Giza- Elomraneya 14</div>
-    <div class="mobile-number text-gray-600">Street name</div>
-    <div class="mobile-number text-gray-600">Mobile Number: 01029889661</div>
+    <div class="flex items-center gap-2 text-gray-600">
+      {{ (address$ | async)?.ResultItems[0].Address.Label }}
+    </div>
+    <div class="mobile-number text-gray-600">
+      Mobile Number: {{userNumber$ | async}}
+    </div>
   </div>
   <div class="p-4 border m-4 border-gray-200 rounded-sm">
     <div class="flex items-center gap-2">

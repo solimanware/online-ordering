@@ -19,6 +19,7 @@ import { Map } from 'maplibre-gl';
 import { CheckoutBody } from 'src/app/interfaces/checkout';
 import { AppService } from 'src/app/services/app.service';
 import { CheckOutService } from 'src/app/services/check-out.service';
+import { UserService } from 'src/app/services/user.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 import { style } from '../specify-location/specify-location.page';
 import { CartService } from './../../services/cart.service';
@@ -55,6 +56,8 @@ export class CheckOutPage implements OnInit {
   checkoutBody: CheckoutBody;
   metadata$ = this.homePageService.metaData$;
   restaurantName$ = this.appService.restaurantName$;
+  address$ = this.userService.userAddress$;
+  userNumber$ = this.userService.userPhoneNumber$;
 
   constructor(
     private homePageService: HomePageService,
@@ -62,7 +65,8 @@ export class CheckOutPage implements OnInit {
     private cartService: CartService,
     private checkOutService: CheckOutService,
     private appService: AppService,
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {
     addIcons({ arrowBackOutline, location });
   }

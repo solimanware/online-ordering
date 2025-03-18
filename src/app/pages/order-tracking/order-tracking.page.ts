@@ -67,6 +67,7 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
       animation: 'arriving-soon',
     },
   ];
+  restaurantName$ = this.appService.restaurantName$;
 
   nextStep(step: OrderStep) {
     switch (step.title) {

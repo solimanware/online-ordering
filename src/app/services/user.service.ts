@@ -1,5 +1,6 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, from, switchMap } from 'rxjs';
+import { BehaviorSubject, from } from 'rxjs';
 import { AppService } from './app.service';
 import { StorageService } from './storage.service';
 
@@ -112,7 +113,11 @@ export class UserService {
   private userId$ = new BehaviorSubject<string | null>(null);
   userAddresses$ = new BehaviorSubject<Address[]>([]);
 
-  constructor(private storage: StorageService, private appService: AppService) {
+  constructor(
+    private storage: StorageService,
+    private appService: AppService,
+    private http: HttpClient
+  ) {
     this.initializeUser();
   }
 
@@ -134,31 +139,12 @@ export class UserService {
   }
 
   verifyOTP(phoneNumber: string, otp: string) {
-    return from(
-      fetch(
-        `https://api-test.tappya.com/auth/otp?account=${
-          this.appService.restaurantName$.value
-        }&mobile=${encodeURIComponent(
-          this.userPhoneNumber$.value
-        )}&code=${otp}`,
-        {
-          method: 'POST',
-        }
-      ).then((res) => res.json() as Promise<UserResponse>)
-    ).pipe(
-      switchMap(async (response) => {
-        await this.storage.set('userId', response.id);
-        this.userId$.next(response.id);
-
-        if (response.name) {
-          this.userName$.next(response.name);
-        }
-        if (response.addresses) {
-          this.userAddresses$.next(response.addresses);
-        }
-
-        return response;
-      })
+    return this.http.post<UserResponse>(
+      `https://api-test.tappya.com/auth/otp?account=${
+        this.appService.restaurantName$.value
+      }&mobile=${encodeURIComponent(this.userPhoneNumber$.value)}&code=${otp}`,
+      {},
+      { observe: 'response' }
     );
   }
 

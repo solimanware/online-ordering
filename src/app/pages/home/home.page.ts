@@ -1,4 +1,5 @@
 import { AsyncPipe, NgStyle } from '@angular/common';
+import { HttpResponse } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -131,14 +132,16 @@ export class HomePage implements OnInit {
   ngOnInit() {
     console.log('I am here');
     this.metaData$.subscribe((metaData) => {
-      fetch(
-        `https://api-test.tappya.com/branch/${this.metaData$.value.branches[0].branchId}/pos/${this.metaData$.value.branches[0].posId}/out-of-stock?account=${this.appService.restaurantName$.value}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          this.outOfStockItems$.next(data);
-        });
+      if (metaData && metaData.branches.length > 0) {
+        fetch(
+          `https://api-test.tappya.com/branch/${metaData.branches[0].branchId}/pos/${metaData.branches[0].posId}/out-of-stock?account=${this.appService.restaurantName$.value}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            this.outOfStockItems$.next(data);
+          });
+      }
     });
     //See if user is logged in
     this.storage.get('user').then((user) => {
@@ -206,26 +209,44 @@ export class HomePage implements OnInit {
     return false;
   }
 
-  handleOTPResult(res: UserResponse) {
-    if (res.mobile) {
-      this.storage.set('user', res);
-      this.homePageService.isUserLoggedIn$.next(true);
-      console.log(res);
-      if (!res.name) {
-        this.action = 'name';
-      } else if (!res.addresses.length) {
-        this.storage.set('user', res);
-        this.router.navigate([
-          '/',
-          this.restaurantName$.value,
-          'specify-location',
-        ]);
-        this.action = null;
-      } else {
-        this.action = null;
-      }
-    } else {
+  async handleOTPResult(res: HttpResponse<UserResponse>) {
+    console.log('response', res);
+
+    if (res.status === 201) {
+      console.log('should show name action sheet');
+
+      //new user
+      //TODO:bug fix
+      this.action = 'name';
+      this.isUserLoggedIn$.next(true);
+      //TODO: choose location if no location is set
+    } else if (res.status === 200) {
+      console.log('should show addresses dropdown');
+
+      this.isUserLoggedIn$.next(true);
+      //existing user
       this.action = null;
+      //TODO: add addresses in dropdown
+      //TODO: check if user has addresses
+      //TODO: if no addresses set, navigate to specify location
+      //TODO: if addresses set, find and set nearest branch
+
+      const user = await res.body;
+      if (user.addresses.length) {
+        this.router.navigate(
+          ['/', this.restaurantName$.value, 'specify-location'],
+          {
+            queryParams: { returnTo: 'home' },
+          }
+        );
+      } else {
+        this.storage.set('user', res.body);
+        // Find and set nearest branch based on user location
+        this.homePageService.findAndSetNearestBranch([
+          parseFloat(user.addresses[0].coordinates.latitude),
+          parseFloat(user.addresses[0].coordinates.longitude),
+        ]);
+      }
     }
   }
 
@@ -263,44 +284,6 @@ export class HomePage implements OnInit {
 
   onCodeCompleted(code: string) {
     // this.verifyOTP(this.phoneNumber$.value);
-  }
-
-  verifyOTP(phoneNumber: string) {
-    if (!this.otp$.value) return;
-
-    this.userService.verifyOTP(phoneNumber, this.otp$.value).subscribe({
-      next: (response) => {
-        if (!response.name) {
-          // New user
-          this.action = 'name';
-        } else {
-          // Existing user
-          console.log(response);
-
-          if (!response.addresses.length) {
-            this.router.navigate(
-              ['/', this.restaurantName$.value, 'specify-location'],
-              {
-                queryParams: { returnTo: 'home' },
-              }
-            );
-          } else {
-            this.storage.set('user', response);
-            // Find and set nearest branch based on user location
-            this.homePageService.findAndSetNearestBranch([
-              parseFloat(response.addresses[0].coordinates.latitude),
-              parseFloat(response.addresses[0].coordinates.longitude),
-            ]);
-          }
-          this.action = null;
-          this.homePageService.isUserLoggedIn$.next(true);
-        }
-      },
-      error: (error) => {
-        console.error('OTP verification failed:', error);
-        // Show error toast
-      },
-    });
   }
 
   continue() {
@@ -349,7 +332,7 @@ export class HomePage implements OnInit {
   }
 
   async login() {
-    this.orderType$.next('delivery');
+    this.action = 'phone-verification';
   }
 
   itemChoosen() {
@@ -386,7 +369,7 @@ export class HomePage implements OnInit {
       const element = categoryElements[i];
       if (element) {
         const rect = element.getBoundingClientRect();
-        if (rect.top <= 100) {
+        if (rect.top <= 150) {
           // Adjust this value based on your layout
           this.activeCategory$.next(categories[i].name.en);
           this.segment.value = this.activeCategory$.value;
@@ -402,6 +385,7 @@ export class HomePage implements OnInit {
   }
 
   onOrderTypeChange(event: any) {
+    console.log('event', event);
     this.orderType$.next(event.detail.value);
 
     if (event.detail.value === 'pickup') {

@@ -127,8 +127,6 @@ export class SpecifyLocationPage {
 
   onMapMoveEnd(event: any) {
     let center = this.map.getCenter();
-    center.lat = parseFloat(center.lat.toFixed(6));
-    center.lng = parseFloat(center.lng.toFixed(6));
     this.homePageService.userLocation$.next([center.lat, center.lng]);
     this.mapMoveSubject.next([center.lat, center.lng]);
   }

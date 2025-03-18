@@ -1,3 +1,4 @@
+import { HttpResponse } from '@angular/common/http';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CodeInputModule } from 'angular-code-input';
 import { BehaviorSubject } from 'rxjs';
@@ -13,7 +14,8 @@ import { UserResponse, UserService } from 'src/app/services/user.service';
 export class OtpComponent implements OnInit {
   phoneNumber$ = this.userService.userPhoneNumber$;
   otp$ = new BehaviorSubject<string>('');
-  @Output() result: EventEmitter<UserResponse> = new EventEmitter();
+  @Output() result: EventEmitter<HttpResponse<UserResponse>> =
+    new EventEmitter();
   constructor(private userService: UserService) {}
 
   ngOnInit() {}
