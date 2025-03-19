@@ -16,6 +16,7 @@
 </ion-header>
 
 <ion-content>
+  @if(orderSteps.length > 0 && orderSteps[0].animation){
   <div class="flex items-center justify-center">
     <div class="flex items-center justify-center w-[300px] h-[300px]">
       <ng-lottie
@@ -48,9 +49,9 @@
           <div
             class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center"
             [ngClass]="{
-              'bg-red-500': step.status === 'completed' || step.status === 'current',
-              'bg-gray-200': step.status === 'pending'
-            }"
+                'bg-red-500': step.status === 'completed' || step.status === 'current',
+                'bg-gray-200': step.status === 'pending'
+              }"
           >
             @if (step.status === 'completed') {
             <ion-icon
@@ -65,9 +66,9 @@
             <p
               class="text-lg"
               [ngClass]="{
-                'text-gray-900': step.status !== 'pending',
-                'text-gray-400': step.status === 'pending'
-              }"
+                  'text-gray-900': step.status !== 'pending',
+                  'text-gray-400': step.status === 'pending'
+                }"
             >
               {{ step.title }}
               <span *ngIf="step.time" class="text-gray-500"
@@ -80,14 +81,15 @@
     </div>
   </div>
   <!-- <div class="mx-4">
-    <button
-      expand="block"
-      color="danger"
-      type="submit"
-      class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full"
-      (click)="nextStep()"
-    >
-      Next Step
-    </button>
-  </div> -->
+      <button
+        expand="block"
+        color="danger"
+        type="submit"
+        class="mt-6 mb-4 rounded-full bg-red-600 text-white px-4 py-2 w-full"
+        (click)="nextStep()"
+      >
+        Next Step
+      </button>
+    </div> -->
+  }
 </ion-content>

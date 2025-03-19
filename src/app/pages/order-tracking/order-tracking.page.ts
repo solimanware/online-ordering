@@ -14,7 +14,9 @@ type OrderStatus =
   | 'Accepted By Branch'
   | 'Preparing'
   | 'In Delivery'
-  | 'Delivered';
+  | 'Delivered'
+  | 'Ready for Pickup'
+  | 'Picked Up';
 
 interface OrderStep {
   title: OrderStatus;
@@ -68,40 +70,75 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
     },
   ];
   restaurantName$ = this.appService.restaurantName$;
+  isPickupFlow$ = this.homePageService.isPickupFlow$;
+
+  initializeOrderSteps(isDelivery: boolean) {
+    this.orderSteps = isDelivery
+      ? [
+          {
+            title: 'Accepted By Branch',
+            time: '10.00AM',
+            status: 'completed',
+            animation: 'order-received',
+          },
+          {
+            title: 'Preparing',
+            status: 'current',
+            animation: 'order-preparing',
+          },
+          {
+            title: 'In Delivery',
+            status: 'pending',
+            animation: 'picked-up',
+          },
+          {
+            title: 'Delivered',
+            status: 'pending',
+            animation: 'arriving-soon',
+          },
+        ]
+      : [
+          {
+            title: 'Accepted By Branch',
+            time: '10.00AM',
+            status: 'completed',
+            animation: 'order-received',
+          },
+          {
+            title: 'Preparing',
+            status: 'current',
+            animation: 'order-preparing',
+          },
+          {
+            title: 'Ready for Pickup',
+            status: 'pending',
+            animation: 'picked-up',
+          },
+          {
+            title: 'Picked Up',
+            status: 'pending',
+            animation: 'arriving-soon',
+          },
+        ];
+  }
 
   nextStep(step: OrderStep) {
-    switch (step.title) {
-      case 'Accepted By Branch':
-        this.orderSteps[0].status = 'completed';
-        this.orderSteps[1].status = 'current';
-        this.options = {
-          ...this.options,
-          path: `/assets/animations/${this.orderSteps[0].animation}.json`,
-        };
-        break;
-      case 'Preparing':
-        this.orderSteps[1].status = 'completed';
-        this.orderSteps[2].status = 'current';
-        this.options = {
-          ...this.options,
-          path: `/assets/animations/${this.orderSteps[1].animation}.json`,
-        };
-        break;
-      case 'In Delivery':
-        this.orderSteps[2].status = 'completed';
-        this.orderSteps[3].status = 'current';
-        this.options = {
-          ...this.options,
-          path: `/assets/animations/${this.orderSteps[2].animation}.json`,
-        };
-        break;
-      case 'Delivered':
-        this.orderSteps[3].status = 'completed';
-        this.options = {
-          ...this.options,
-          path: `/assets/animations/${this.orderSteps[3].animation}.json`,
-        };
-        break;
+    const currentIndex = this.orderSteps.findIndex(
+      (s) => s.title === step.title
+    );
+    if (currentIndex >= 0 && currentIndex < this.orderSteps.length - 1) {
+      this.orderSteps[currentIndex].status = 'completed';
+      this.orderSteps[currentIndex + 1].status = 'current';
+      this.options = {
+        ...this.options,
+        path: `/assets/animations/${this.orderSteps[currentIndex].animation}.json`,
+      };
+    } else if (currentIndex === this.orderSteps.length - 1) {
+      this.orderSteps[currentIndex].status = 'completed';
+      this.options = {
+        ...this.options,
+        path: `/assets/animations/${this.orderSteps[currentIndex].animation}.json`,
+      };
     }
   }
 
@@ -115,35 +152,51 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
   pollInterval: any;
 
   ngOnInit() {
-    // Get initial order status
-    const branchId = this.homePageService.metaData$.value?.branches[0].branchId; // Get from route params or service
-    const posId = this.homePageService.metaData$.value?.branches[0].posId; // Get from route params or service
-    const accountId = this.appService.restaurantName$.value; // Get from route params or service
-    const orderId = this.router.url.split('/').pop(); // Get from route params or service
+    const branchId = this.homePageService.metaData$.value?.branches[0].branchId;
+    const posId = this.homePageService.metaData$.value?.branches[0].posId;
+    const accountId = this.appService.restaurantName$.value;
+    const orderId = this.router.url.split('/').pop();
 
-    console.log(branchId, posId, accountId, orderId);
-    // Poll order status every 30 seconds
+    // Get order type (delivery or pickup) from service or route params
+    this.isPickupFlow$.subscribe((isPickupFlow) => {
+      this.initializeOrderSteps(!isPickupFlow);
+      console.log(this.orderSteps);
+    });
     this.pollInterval = setInterval(() => {
       fetch(
         `https://api-test.tappya.com/branch/${branchId}/pos/${posId}/get-order-status?account=${accountId}&orderId=${orderId}`
       )
         .then((res) => res.json())
         .then((data) => {
-          // Update order status based on response
           console.log('Order status:', data);
-          switch (data.message) {
-            case 'accepted':
-              this.nextStep(this.orderSteps[0]);
-              break;
-            case 'preparing':
-              this.nextStep(this.orderSteps[1]);
-              break;
-            case 'in_delivery':
-              this.nextStep(this.orderSteps[2]);
-              break;
-            case 'delivered':
-              this.nextStep(this.orderSteps[3]);
-              break;
+          const currentStep = this.orderSteps.find(
+            (step) => step.status === 'current'
+          );
+          if (currentStep) {
+            switch (data.message) {
+              case 'accepted':
+                if (currentStep.title !== 'Accepted By Branch') {
+                  this.nextStep(this.orderSteps[0]);
+                }
+                break;
+              case 'preparing':
+                if (currentStep.title !== 'Preparing') {
+                  this.nextStep(this.orderSteps[1]);
+                }
+                break;
+              case 'in_delivery':
+              case 'ready_for_pickup':
+                if (currentStep.title !== this.orderSteps[2].title) {
+                  this.nextStep(this.orderSteps[2]);
+                }
+                break;
+              case 'delivered':
+              case 'picked_up':
+                if (currentStep.title !== this.orderSteps[3].title) {
+                  this.nextStep(this.orderSteps[3]);
+                }
+                break;
+            }
           }
         })
         .catch((err) => {
