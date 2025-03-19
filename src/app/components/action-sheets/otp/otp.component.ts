@@ -2,6 +2,7 @@ import { HttpResponse } from '@angular/common/http';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CodeInputModule } from 'angular-code-input';
 import { BehaviorSubject } from 'rxjs';
+import { CustomerService } from 'src/app/services/customer.service';
 import { UserResponse, UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -16,7 +17,10 @@ export class OtpComponent implements OnInit {
   otp$ = new BehaviorSubject<string>('');
   @Output() result: EventEmitter<HttpResponse<UserResponse>> =
     new EventEmitter();
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private customerService: CustomerService
+  ) {}
 
   ngOnInit() {}
 
@@ -35,6 +39,7 @@ export class OtpComponent implements OnInit {
         console.log(res);
         this.userService.userName$.next(res.body?.name);
         this.userService.userPhoneNumber$.next(res.body?.mobile);
+        this.customerService.customerId$.next(res.body?.id);
         this.result.emit(res);
       },
       error: (err) => {

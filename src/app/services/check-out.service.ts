@@ -35,19 +35,19 @@ export class CheckOutService {
   getCheckoutBody() {
     //get all modifier categories and then add the modifier quantity to the items
     const modifierCategoryIds: ModifierCategoryId[] = [];
-    for (const item of this.cartService.cartSummary$.value) {
-      for (const modifierCategory of item.item.modifierCategories) {
-        for (const modifier of modifierCategory.modifiers) {
-          for (const a of item.item.selectedModifiers) {
-            if (a.id === modifier.id) {
+    for (const item of this.cartService.cartSummary$.value || []) {
+      for (const modifierCategory of item?.item?.modifierCategories || []) {
+        for (const modifier of modifierCategory?.modifiers || []) {
+          for (const a of item?.item?.selectedModifiers || []) {
+            if (a?.id === modifier?.id) {
               modifierCategoryIds.push({
-                id: modifierCategory.id,
+                id: modifierCategory?.id,
                 items: [
                   {
-                    id: modifier.id,
-                    quantity: a.quantity || 0,
-                    price: Number(modifier.price) || 0,
-                    taxIds: modifier.taxIds.map((tax) => tax.id),
+                    id: modifier?.id,
+                    quantity: a?.quantity || 0,
+                    price: Number(modifier?.price) || 0,
+                    taxIds: modifier?.taxIds?.map((tax) => tax?.id) || [],
                   },
                 ],
               });
@@ -57,7 +57,7 @@ export class CheckOutService {
       }
     }
     this.checkoutBody = {
-      customerId: this.customerService.customerId$.value,
+      customerId: this.customerService.customerId$?.value,
       type: 'delivery',
       deliveryType: 'delivery',
       timestamp: new Date().toISOString(),
@@ -65,50 +65,56 @@ export class CheckOutService {
         name: '',
         time: '',
       },
-      deliveryAddressId: this.customerService.customerId$.value,
-      mobileNumber: this.userService.userPhoneNumber$.value,
+      deliveryAddressId: this.customerService.customerId$?.value,
+      mobileNumber: this.userService.userPhoneNumber$?.value,
       currency: 'EGP',
       pushNotificationToken: '',
       deliveryAddress: {
-        phoneNumber: this.userService.userPhoneNumber$.value,
+        phoneNumber: this.userService.userPhoneNumber$?.value,
         street:
-          this.userService.userAddress$.value.ResultItems[0].Address.Street,
+          this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+            ?.Street,
         street2: '',
-        city: this.userService.userAddress$.value.ResultItems[0].Address
-          .Locality,
+        city: this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+          ?.Locality,
         state:
-          this.userService.userAddress$.value.ResultItems[0].Address.District,
+          this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+            ?.District,
         postalCode:
-          this.userService.userAddress$.value.ResultItems[0].Address.PostalCode,
+          this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+            ?.PostalCode,
         building:
-          this.userService.userAddress$.value.ResultItems[0].Address
-            .AddressNumber,
+          this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+            ?.AddressNumber,
         landmark:
-          this.userService.userAddress$.value.ResultItems[0].Address.Label,
+          this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+            ?.Label,
         flatNumber: '1',
         country:
-          this.userService.userAddress$.value.ResultItems[0].Address.Country
-            .Name,
+          this.userService.userAddress$?.value?.ResultItems?.[0]?.Address
+            ?.Country?.Name,
         coordinates: {
-          latitude: this.homePageService.userLocation$.value[0],
-          longitude: this.homePageService.userLocation$.value[1],
+          latitude: this.homePageService.userLocation$?.value?.[0],
+          longitude: this.homePageService.userLocation$?.value?.[1],
         },
         type: 'residential',
         isPrimary: true,
       },
-      orderItems: this.cartService.cartSummary$.value.map((item) => ({
-        id: item.item.id,
-        quantity: item.quantity || 0,
-        price: Number(item.subtotal) || 0,
-        variantCategoryIds: item.item.variantCategories.map((variant) => ({
-          id: variant.id,
-          items: variant.variants.map((variantItem) => ({
-            id: variantItem.id,
-            price: Number(variantItem.price) || 0,
-          })),
-        })),
+      orderItems: (this.cartService.cartSummary$?.value || []).map((item) => ({
+        id: item?.item?.id,
+        quantity: item?.quantity || 0,
+        price: Number(item?.subtotal) || 0,
+        variantCategoryIds: (item?.item?.variantCategories || []).map(
+          (variant) => ({
+            id: variant?.id,
+            items: (variant?.variants || []).map((variantItem) => ({
+              id: variantItem?.id,
+              price: Number(variantItem?.price) || 0,
+            })),
+          })
+        ),
         modifierCategoryIds: modifierCategoryIds,
-        note: this.notes$.value,
+        note: this.notes$?.value,
       })),
       payment: {
         status: 'PAID',
@@ -116,19 +122,19 @@ export class CheckOutService {
         settlements: [
           {
             method: 'CASH',
-            amount: this.paymentSummary$.value.total,
+            amount: this.paymentSummary$?.value?.total,
             reference: '',
           },
         ],
       },
       orderNote: 'Hello',
-      subtotal: this.paymentSummary$.value.subtotal,
+      subtotal: this.paymentSummary$?.value?.subtotal,
       shippingCost:
-        this.homePageService.nearestBranch$.value.price ||
-        this.homePageService.nearestBranch$.value.deliveryFees,
+        this.homePageService.nearestBranch$?.value?.price ||
+        this.homePageService.nearestBranch$?.value?.deliveryFees,
       discountAmount: 0,
-      taxAmount: this.paymentSummary$.value.tax,
-      total: this.paymentSummary$.value.total,
+      taxAmount: this.paymentSummary$?.value?.tax,
+      total: this.paymentSummary$?.value?.total,
     };
     return this.checkoutBody;
   }

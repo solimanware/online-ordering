@@ -75,23 +75,45 @@ export class CheckOutPage implements OnInit {
   async ngOnInit() {}
 
   placeOrder() {
-    const url = `https://api-test.tappya.com/branch/${this.metadata$.value.branches[0].branchId}/pos/${this.metadata$.value.branches[0].posId}/create-order?account=${this.metadata$.value.url}`;
-    this.checkoutBody = this.checkOutService.getCheckoutBody();
-    console.log(this.checkoutBody);
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(this.checkoutBody),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        this.router.navigate([
-          '/',
-          this.restaurantName$.value,
-          'order-tracking',
-          data.order,
-        ]);
-      });
+    if (this.homePageService.isPickupFlow$.value) {
+      const url = `https://api-test.tappya.com/branch/${this.metadata$.value.branches[0].branchId}/pos/${this.metadata$.value.branches[0].posId}/create-order?account=${this.metadata$.value.url}`;
+      this.checkoutBody = this.checkOutService.getCheckoutBody();
+      this.checkoutBody.deliveryType = 'pickup';
+      this.checkoutBody.deliveryAddress = null;
+      this.checkoutBody.deliveryAddressId = null;
+      console.log(this.checkoutBody);
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(this.checkoutBody),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+          this.router.navigate([
+            '/',
+            this.restaurantName$.value,
+            'order-tracking',
+            data.order,
+          ]);
+        });
+    } else {
+      const url = `https://api-test.tappya.com/branch/${this.metadata$.value.branches[0].branchId}/pos/${this.metadata$.value.branches[0].posId}/create-order?account=${this.metadata$.value.url}`;
+      this.checkoutBody = this.checkOutService.getCheckoutBody();
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(this.checkoutBody),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+          this.router.navigate([
+            '/',
+            this.restaurantName$.value,
+            'order-tracking',
+            data.order,
+          ]);
+        });
+    }
   }
 
   onMapLoaded(event: Map) {
