@@ -1,3 +1,10 @@
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +27,8 @@ import {
 import { AppService } from 'src/app/services/app.service';
 import { CartService } from 'src/app/services/cart.service';
 import { HomePageService } from 'src/app/services/home-page.service';
+import { LoggerService } from 'src/app/services/logger.service';
+import { AnimationsService } from '../../services/animations.service';
 
 interface SelectedModifier {
   id: string;
@@ -56,6 +65,49 @@ export interface ItemDetail extends Item {
     FormsModule,
     RouterLink,
   ],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('400ms ease-in', style({ opacity: 1 })),
+      ]),
+    ]),
+    trigger('slideInUp', [
+      transition(':enter', [
+        style({ transform: 'translateY(30px)', opacity: 0 }),
+        animate(
+          '400ms ease-out',
+          style({ transform: 'translateY(0)', opacity: 1 })
+        ),
+      ]),
+    ]),
+    trigger('itemSelection', [
+      state(
+        'selected',
+        style({
+          borderColor: '#dc2626',
+          backgroundColor: 'rgba(220, 38, 38, 0.05)',
+          transform: 'scale(1.02)',
+        })
+      ),
+      state(
+        'unselected',
+        style({
+          borderColor: '#e5e7eb',
+          backgroundColor: 'white',
+          transform: 'scale(1)',
+        })
+      ),
+      transition('unselected => selected', [animate('200ms ease-out')]),
+      transition('selected => unselected', [animate('150ms ease-in')]),
+    ]),
+    trigger('imageAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.9)' }),
+        animate('500ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+    ]),
+  ],
 })
 export class ItemDetailPage implements OnInit {
   quantity: number = 1;
@@ -66,13 +118,21 @@ export class ItemDetailPage implements OnInit {
     private homePageService: HomePageService,
     private cartService: CartService,
     private router: Router,
-    private appService: AppService
+    private appService: AppService,
+    private logger: LoggerService,
+    private animationsService: AnimationsService
   ) {
     addIcons({ arrowBackOutline, closeOutline });
+    this.logger.info('ItemDetailPage', 'Component initialized');
   }
 
   ngOnInit() {
     this.homePageService.selectedItem$.subscribe((item) => {
+      this.logger.debug('ItemDetailPage', 'Selected item updated', {
+        itemId: item?.id,
+        itemName: item?.name?.en,
+      });
+
       this.itemDetail = {
         ...item,
         selectedModifiers: [],
@@ -89,6 +149,7 @@ export class ItemDetailPage implements OnInit {
   }
 
   calculateTotalPrice(itemDetail: ItemDetail) {
+    this.logger.debug('ItemDetailPage', 'Calculating total price');
     let variantPrice = 0;
     let modifiersPrice = 0;
 
@@ -136,7 +197,7 @@ export class ItemDetailPage implements OnInit {
       itemDetail.variantCategories?.[0]?.variants?.[0]?.price?.currency ||
       'EGP';
 
-    console.log('Price calculation:', {
+    this.logger.debug('ItemDetailPage', 'Price calculation completed', {
       basePrice,
       variantPrice,
       modifiersPrice,
@@ -155,7 +216,12 @@ export class ItemDetailPage implements OnInit {
 
   toggleModifier(modifier: Modifier, category: ModifierCategory) {
     const isSelected = this.isModifierSelected(modifier.id);
-    console.log('this.itemDetail', this.itemDetail);
+    this.logger.debug('ItemDetailPage', 'Toggling modifier', {
+      modifierId: modifier.id,
+      modifierName: modifier.name?.en,
+      isCurrentlySelected: isSelected,
+      itemDetail: this.itemDetail.id,
+    });
 
     if (isSelected) {
       // Handle deselection
@@ -165,12 +231,25 @@ export class ItemDetailPage implements OnInit {
           currentSelections <= category.minSelection &&
           category.minSelection > 0
         ) {
+          this.logger.warn(
+            'ItemDetailPage',
+            'Cannot deselect modifier due to minimum selection requirement',
+            {
+              currentSelections,
+              minRequired: category.minSelection,
+            }
+          );
           this.showToast(
             `You must select at least ${category.minSelection} ${category.name.en}`
           );
           return;
         }
       }
+
+      this.logger.info('ItemDetailPage', 'Removing modifier from selection', {
+        modifierId: modifier.id,
+        modifierName: modifier.name?.en,
+      });
       this.itemDetail.selectedModifiers =
         this.itemDetail.selectedModifiers.filter((m) => m.id !== modifier.id);
     } else {
@@ -180,24 +259,41 @@ export class ItemDetailPage implements OnInit {
         category
       );
       if (!validationResult.isValid) {
+        this.logger.warn(
+          'ItemDetailPage',
+          'Modifier selection validation failed',
+          {
+            message: validationResult.message,
+          }
+        );
         this.showToast(validationResult.message);
         return;
       }
 
       if (!category.isMultiSelect) {
         // Remove any existing selection in this category for single select
+        this.logger.debug(
+          'ItemDetailPage',
+          'Single select category - removing previous selections'
+        );
         this.itemDetail.selectedModifiers =
-          this.itemDetail.selectedModifiers.filter(
-            (m) => !category.modifiers.some((mod) => mod.id === m.id)
-          );
+          this.itemDetail.selectedModifiers.filter((mod) => {
+            const modifierObj = this.findModifierById(mod.id);
+            const modifierCategory = this.itemDetail.modifierCategories.find(
+              (cat) => cat.modifiers.some((m) => m.id === mod.id)
+            );
+            return modifierCategory?.id !== category.id;
+          });
       }
 
-      this.itemDetail.selectedModifiers.push({
-        id: modifier.id,
-        quantity: 1,
+      this.logger.info('ItemDetailPage', 'Adding modifier to selection', {
+        modifierId: modifier.id,
+        modifierName: modifier.name?.en,
       });
+      this.itemDetail.selectedModifiers.push({ id: modifier.id, quantity: 1 });
     }
 
+    // Recalculate price after modifiers are updated
     this.calculateTotalPrice(this.itemDetail);
   }
 
@@ -300,32 +396,42 @@ export class ItemDetailPage implements OnInit {
   }
 
   incrementQuantity() {
-    this.quantity = Math.min(this.quantity + 1, 10); // Max 10 items
+    this.logger.debug('ItemDetailPage', 'Incrementing item quantity', {
+      oldQuantity: this.quantity,
+      itemId: this.itemDetail.id,
+    });
+    this.quantity++;
     this.calculateTotalPrice(this.itemDetail);
-    console.log(this.itemDetail);
-
-    this.cartService.addOnceToCart(this.itemDetail);
   }
 
   decrementQuantity() {
-    this.quantity = Math.max(this.quantity - 1, 1); // Min 1 item
-    this.calculateTotalPrice(this.itemDetail);
-    this.cartService.removeOnceFromCart(this.itemDetail);
+    if (this.quantity > 1) {
+      this.logger.debug('ItemDetailPage', 'Decrementing item quantity', {
+        oldQuantity: this.quantity,
+        itemId: this.itemDetail.id,
+      });
+      this.quantity--;
+      this.calculateTotalPrice(this.itemDetail);
+    }
   }
 
-  // updatePrice() {
-  //   let extrasTotal = this.extras
-  //     .filter((extra) => extra.selected)
-  //     .reduce((sum, extra) => sum + extra.price, 0);
-  //   this.totalPrice =
-  //     Math.round((this.basePrice + extrasTotal) * this.quantity * 100) / 100;
-  // }
-
   async addToCart() {
+    this.logger.info('ItemDetailPage', 'Adding item to cart', {
+      itemId: this.itemDetail.id,
+      itemName: this.itemDetail.name?.en,
+      quantity: this.itemDetail.quantity,
+      totalPrice: this.itemDetail.totalPrice,
+    });
+
     // Validate minimum selections before adding to cart
     for (const category of this.itemDetail.modifierCategories || []) {
       const currentSelections = this.getCurrentSelectionsCount(category);
       if (currentSelections < category.minSelection) {
+        this.logger.warn('ItemDetailPage', 'Minimum selection not met', {
+          category: category.name.en,
+          required: category.minSelection,
+          current: currentSelections,
+        });
         this.showToast(
           `Please select at least ${category.minSelection} ${category.name.en}`
         );
@@ -358,32 +464,24 @@ export class ItemDetailPage implements OnInit {
       variantCategories: this.itemDetail.variantCategories,
       modifierCategories: this.itemDetail.modifierCategories,
       price: this.itemDetail.price,
-      selectedModifiers: this.itemDetail.selectedModifiers,
+      selectedModifierId: this.itemDetail.selectedModifierId,
       selectedVariantId: this.itemDetail.selectedVariantId,
       totalPrice: this.itemDetail.totalPrice,
-      quantity: this.quantity,
+      quantity: this.itemDetail.quantity,
       subtotal: this.itemDetail.subtotal,
       total: this.itemDetail.total,
-      tax: this.itemDetail.tax,
-      serviceFee: this.itemDetail.serviceFee,
       currency: this.itemDetail.currency,
+      selectedModifiers: [...this.itemDetail.selectedModifiers],
     };
 
-    this.cartService.addOnceToCart(cartItem);
+    await this.cartService.addOnceToCart(cartItem);
 
-    this.cartService.cartSummary$.subscribe((cartSummary) => {
-      console.log(cartSummary);
+    const cartSummary = this.cartService.cartSummary$.value;
+    this.logger.debug('ItemDetailPage', 'Cart updated', {
+      cartItemCount: cartSummary.length,
+      totalItems: cartSummary.reduce((sum, item) => sum + item.quantity, 0),
     });
 
-    const toast = await this.toastController.create({
-      message: 'Item added to cart!',
-      duration: 2000,
-      position: 'bottom',
-      color: 'success',
-      cssClass: 'custom-toast',
-    });
-
-    // toast.present();
     this.router.navigate(['/', this.restaurantName$.value, 'home']);
   }
 }

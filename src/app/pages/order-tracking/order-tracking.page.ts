@@ -9,6 +9,7 @@ import { AnimationItem } from 'lottie-web';
 import { LottieComponent } from 'ngx-lottie';
 import { AppService } from 'src/app/services/app.service';
 import { HomePageService } from 'src/app/services/home-page.service';
+import { OrderService } from '../../services/order.service';
 
 type OrderStatus =
   | 'Accepted By Branch'
@@ -145,64 +146,54 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
   constructor(
     private homePageService: HomePageService,
     private appService: AppService,
-    private router: Router
+    private router: Router,
+    private orderService: OrderService
   ) {
     addIcons({ arrowBackOutline, checkmarkOutline });
   }
   pollInterval: any;
 
   ngOnInit() {
-    const branchId = this.homePageService.metaData$.value?.branches[0].branchId;
-    const posId = this.homePageService.metaData$.value?.branches[0].posId;
-    const accountId = this.appService.restaurantName$.value;
-    const orderId = this.router.url.split('/').pop();
+    const url = this.router.url;
+    const parts = url.split('/');
+    const orderId = parts[parts.length - 1];
+    const accountId = parts[1];
+    const branchId = this.homePageService.metaData$.value.branches[0].branchId;
+    const posId = this.homePageService.metaData$.value.branches[0].posId;
 
     // Get order type (delivery or pickup) from service or route params
     this.isPickupFlow$.subscribe((isPickupFlow) => {
       this.initializeOrderSteps(!isPickupFlow);
       console.log(this.orderSteps);
     });
+
     this.pollInterval = setInterval(() => {
-      fetch(
-        `https://api-test.tappya.com/branch/${branchId}/pos/${posId}/get-order-status?account=${accountId}&orderId=${orderId}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          console.log('Order status:', data);
-          const currentStep = this.orderSteps.find(
-            (step) => step.status === 'current'
-          );
-          if (currentStep) {
-            switch (data.message) {
-              case 'accepted':
-                if (currentStep.title !== 'Accepted By Branch') {
-                  this.nextStep(this.orderSteps[0]);
-                }
-                break;
-              case 'preparing':
-                if (currentStep.title !== 'Preparing') {
-                  this.nextStep(this.orderSteps[1]);
-                }
-                break;
-              case 'in_delivery':
-              case 'ready_for_pickup':
-                if (currentStep.title !== this.orderSteps[2].title) {
-                  this.nextStep(this.orderSteps[2]);
-                }
-                break;
-              case 'delivered':
-              case 'picked_up':
-                if (currentStep.title !== this.orderSteps[3].title) {
-                  this.nextStep(this.orderSteps[3]);
-                }
-                break;
+      this.orderService
+        .getOrderStatus(
+          branchId.toString(),
+          posId.toString(),
+          accountId,
+          orderId
+        )
+        .subscribe((data) => {
+          console.log(data);
+          this.status = data.status;
+          this.orderSteps = this.orderSteps.map((step) => {
+            if (step.title === this.status) {
+              step.status = 'current';
+              step.time = new Date().toLocaleTimeString();
+            } else if (
+              this.orderSteps.findIndex((s) => s.title === this.status) >
+              this.orderSteps.findIndex((s) => s.title === step.title)
+            ) {
+              step.status = 'completed';
+            } else {
+              step.status = 'pending';
             }
-          }
-        })
-        .catch((err) => {
-          console.error('Error fetching order status:', err);
+            return step;
+          });
         });
-    }, 10000);
+    }, 5000);
   }
 
   ngOnDestroy = () => {

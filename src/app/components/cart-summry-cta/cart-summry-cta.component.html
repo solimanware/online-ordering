@@ -1,4 +1,4 @@
-<ion-footer class="ion-no-border cart-summary-footer">
+<ion-footer class="ion-no-border cart-summary-footer" [@slideInUp]>
   <div class="p-4 bg-white shadow-top">
     <div class="flex items-center justify-between">
       <button
@@ -7,6 +7,7 @@
       >
         <div
           class="flex items-center justify-center bg-red-700 rounded-full w-10 h-10 mr-3 ml-3"
+          [@pulse]
         >
           {{ (paymentSummary$ | async)?.itemsCount }}
         </div>

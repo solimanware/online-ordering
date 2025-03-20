@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { BehaviorSubject } from 'rxjs';
 import { ItemDetail } from '../pages/item-detail/item-detail.page';
+import { LoggerService } from './logger.service';
 
 export interface CartSummary {
   item: ItemDetail;
@@ -40,11 +41,15 @@ export class CartService {
     currency: '',
   });
 
-  constructor(private toastController: ToastController) {
+  constructor(
+    private toastController: ToastController,
+    private logger: LoggerService
+  ) {
+    this.logger.info('CartService', 'Service initialized');
     // Update the payment summary whenever the cart summary changes.
     this.cartSummary$.subscribe((cartSummary) => {
       this.paymentSummary$.next(this.calculatePaymentSummary(cartSummary));
-      console.log(cartSummary);
+      this.logger.debug('CartService', 'Cart summary updated', cartSummary);
     });
   }
 
@@ -60,6 +65,10 @@ export class CartService {
     // toast.present();
 
     const currentCart = this.cartSummary$.value;
+    this.logger.info('CartService', 'Adding item to cart', {
+      itemId: item.id,
+      name: item.name?.en,
+    });
 
     // Use more robust check: Compare both ID and variant/modifier
     const index = currentCart.findIndex(
@@ -70,6 +79,14 @@ export class CartService {
     );
 
     if (index !== -1) {
+      this.logger.debug(
+        'CartService',
+        'Item already exists in cart, increasing quantity',
+        {
+          itemId: item.id,
+          name: item.name?.en,
+        }
+      );
       this.increaseQuantity(item);
     } else {
       // Determine the correct price to use
@@ -115,6 +132,13 @@ export class CartService {
         total: total,
       };
 
+      this.logger.debug('CartService', 'Adding new item to cart', {
+        itemId: item.id,
+        name: item.name?.en,
+        price: priceAmount,
+        currency: priceCurrency,
+      });
+
       this.cartSummary$.next([...currentCart, newCartItem]);
     }
   }
@@ -123,6 +147,11 @@ export class CartService {
    * Removes an item completely from the cart.
    */
   removeOnceFromCart(item: ItemDetail): void {
+    this.logger.info('CartService', 'Removing item from cart', {
+      itemId: item.id,
+      name: item.name?.en,
+    });
+
     const updatedCart = this.cartSummary$.value.filter(
       (i) => i.item.id !== item.id
     );
@@ -133,6 +162,11 @@ export class CartService {
    * Increases the quantity of an item in the cart and recalculates its totals.
    */
   increaseQuantity(item: ItemDetail): void {
+    this.logger.debug('CartService', 'Increasing item quantity', {
+      itemId: item.id,
+      name: item.name?.en,
+    });
+
     const updatedCart = this.cartSummary$.value.map((cartItem) => {
       // Check for matching item including variants and modifiers
       if (
@@ -154,6 +188,11 @@ export class CartService {
    * Removes the item if the quantity drops to zero.
    */
   decreaseQuantity(item: ItemDetail): void {
+    this.logger.debug('CartService', 'Decreasing item quantity', {
+      itemId: item.id,
+      name: item.name?.en,
+    });
+
     const updatedCart = this.cartSummary$.value
       .map((cartItem) => {
         // Check for matching item including variants and modifiers
@@ -165,6 +204,14 @@ export class CartService {
           const newQuantity = cartItem.quantity - 1;
           // Remove the item if quantity becomes zero
           if (newQuantity <= 0) {
+            this.logger.debug(
+              'CartService',
+              'Item quantity is zero, removing from cart',
+              {
+                itemId: item.id,
+                name: item.name?.en,
+              }
+            );
             return null;
           }
           const updatedItem = { ...cartItem, quantity: newQuantity };
@@ -181,6 +228,7 @@ export class CartService {
    */
   private calculatePaymentSummary(cartItems: CartSummary[]): PaymentSummary {
     if (cartItems.length === 0) {
+      this.logger.debug('CartService', 'Cart is empty, payment summary reset');
       return {
         itemsCount: 0,
         subtotal: 0,
@@ -190,7 +238,8 @@ export class CartService {
         currency: '',
       };
     }
-    return {
+
+    const summary = {
       // Here, itemsCount can represent either the number of unique items or the total quantity.
       // This example sums up the quantities for a total count.
       itemsCount: cartItems.reduce((acc, item) => acc + item.quantity, 0),
@@ -201,7 +250,11 @@ export class CartService {
       // Safely use the currency from the first item if available.
       currency: cartItems[0].currency,
     };
+
+    this.logger.debug('CartService', 'Payment summary calculated', summary);
+    return summary;
   }
+
   private recalcCartItem(cartItem: CartSummary): CartSummary {
     // Determine the correct base price per unit
     let unitPrice = 0;
@@ -242,6 +295,17 @@ export class CartService {
     const serviceFee = totalPrice * 0.1;
     const tax = totalPrice * 0.15;
     const total = totalPrice + serviceFee + tax;
+
+    this.logger.trace('CartService', 'Cart item recalculated', {
+      itemId: cartItem.item.id,
+      name: cartItem.item.name?.en,
+      quantity,
+      unitPrice,
+      totalPrice,
+      serviceFee,
+      tax,
+      total,
+    });
 
     return {
       ...cartItem,

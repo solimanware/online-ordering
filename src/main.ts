@@ -12,6 +12,7 @@ import {
 
 import { provideHttpClient } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import player from 'lottie-web';
 import { provideLottieOptions } from 'ngx-lottie';
@@ -39,5 +40,6 @@ bootstrapApplication(AppComponent, {
       useValue: playerFactory,
     },
     provideHttpClient(),
+    provideAnimations(),
   ],
 });

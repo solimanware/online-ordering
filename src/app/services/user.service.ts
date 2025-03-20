@@ -155,6 +155,11 @@ export class UserService {
     });
   }
 
+  saveUserPhoneNumber(phoneNumber: string) {
+    this.userPhoneNumber$.next(phoneNumber);
+    this.storage.set('userPhoneNumber', phoneNumber);
+  }
+
   // private fetchUserData() {
   //   return from(
   //     fetch(

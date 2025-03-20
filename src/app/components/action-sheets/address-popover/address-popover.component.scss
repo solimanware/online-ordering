@@ -1,0 +1,52 @@
+.popover-container {
+  background-color: white;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.popover-header {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.popover-content {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 40vh;
+}
+
+.address-item {
+  border-radius: 8px;
+  margin: 4px 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+
+  &.selected {
+    --background: #f3f8ff;
+    --background-hover: #e6f0ff;
+    font-weight: 500;
+
+    ion-icon {
+      color: #3880ff;
+    }
+  }
+}
+
+.new-address-btn {
+  --color: #3880ff;
+
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+ion-item {
+  --border-style: none;
+  --ripple-color: transparent;
+
+  &:hover {
+    --background: #f9fafb;
+  }
+}

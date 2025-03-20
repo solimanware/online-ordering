@@ -20,6 +20,7 @@ import { CheckoutBody } from 'src/app/interfaces/checkout';
 import { AppService } from 'src/app/services/app.service';
 import { CheckOutService } from 'src/app/services/check-out.service';
 import { UserService } from 'src/app/services/user.service';
+import { OrderService } from '../../services/order.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 import { style } from '../specify-location/specify-location.page';
 import { CartService } from './../../services/cart.service';
@@ -67,7 +68,8 @@ export class CheckOutPage implements OnInit {
     private checkOutService: CheckOutService,
     private appService: AppService,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private orderService: OrderService
   ) {
     addIcons({ arrowBackOutline, location });
   }
@@ -75,19 +77,22 @@ export class CheckOutPage implements OnInit {
   async ngOnInit() {}
 
   placeOrder() {
-    if (this.homePageService.isPickupFlow$.value) {
-      const url = `https://api-test.tappya.com/branch/${this.metadata$.value.branches[0].branchId}/pos/${this.metadata$.value.branches[0].posId}/create-order?account=${this.metadata$.value.url}`;
+    if (this.isPickupFlow$.value) {
+      const url = `https://api-test.tappya.com/branch/${this.nearestBranch$.value.branchId}/pos/${this.nearestBranch$.value.posId}/create-order?account=${this.metadata$.value.url}`;
       this.checkoutBody = this.checkOutService.getCheckoutBody();
       this.checkoutBody.deliveryType = 'pickup';
       this.checkoutBody.deliveryAddress = null;
       this.checkoutBody.deliveryAddressId = null;
       console.log(this.checkoutBody);
-      fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(this.checkoutBody),
-      })
-        .then((res) => res.json())
-        .then((data) => {
+
+      this.orderService
+        .createOrder(
+          this.nearestBranch$.value.branchId.toString(),
+          this.nearestBranch$.value.posId.toString(),
+          this.metadata$.value.url,
+          this.checkoutBody
+        )
+        .subscribe((data) => {
           console.log(data);
           this.router.navigate([
             '/',
@@ -97,14 +102,15 @@ export class CheckOutPage implements OnInit {
           ]);
         });
     } else {
-      const url = `https://api-test.tappya.com/branch/${this.metadata$.value.branches[0].branchId}/pos/${this.metadata$.value.branches[0].posId}/create-order?account=${this.metadata$.value.url}`;
       this.checkoutBody = this.checkOutService.getCheckoutBody();
-      fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(this.checkoutBody),
-      })
-        .then((res) => res.json())
-        .then((data) => {
+      this.orderService
+        .createOrder(
+          this.metadata$.value.branches[0].branchId.toString(),
+          this.metadata$.value.branches[0].posId.toString(),
+          this.metadata$.value.url,
+          this.checkoutBody
+        )
+        .subscribe((data) => {
           console.log(data);
           this.router.navigate([
             '/',

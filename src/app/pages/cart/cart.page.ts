@@ -1,6 +1,14 @@
+import {
+  animate,
+  query,
+  stagger,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { HttpResponse } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -11,7 +19,6 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 import { CodeInputModule } from 'angular-code-input';
-import { phone } from 'phone';
 import { BehaviorSubject } from 'rxjs';
 import { EnterNameComponent } from 'src/app/components/action-sheets/enter-name/enter-name.component';
 import { OtpComponent } from 'src/app/components/action-sheets/otp/otp.component';
@@ -22,6 +29,8 @@ import { CheckOutService } from 'src/app/services/check-out.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserResponse, UserService } from 'src/app/services/user.service';
+import { AnimationsService } from '../../services/animations.service';
+import { AuthService } from '../../services/auth.service';
 import { ItemDetail } from '../item-detail/item-detail.page';
 
 export interface CartDisplayedItem extends ItemDetail {
@@ -54,8 +63,56 @@ export interface CartSummary {
     PhoneVerificationComponent,
     OtpComponent,
   ],
+  animations: [
+    // Add animations
+    trigger('cartItemAnimation', [
+      transition(':enter', [
+        style({ opacity: 0, height: 0, transform: 'translateX(-10px)' }),
+        animate(
+          '300ms ease-out',
+          style({ opacity: 1, height: '*', transform: 'translateX(0)' })
+        ),
+      ]),
+      transition(':leave', [
+        style({ opacity: 1, height: '*' }),
+        animate(
+          '250ms ease-in',
+          style({ opacity: 0, height: 0, transform: 'translateX(-10px)' })
+        ),
+      ]),
+    ]),
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('400ms ease-in', style({ opacity: 1 })),
+      ]),
+    ]),
+    trigger('listAnimation', [
+      transition('* <=> *', [
+        query(
+          ':enter',
+          [
+            style({ opacity: 0, transform: 'translateY(20px)' }),
+            stagger('50ms', [
+              animate(
+                '300ms ease-out',
+                style({ opacity: 1, transform: 'translateY(0)' })
+              ),
+            ]),
+          ],
+          { optional: true }
+        ),
+      ]),
+    ]),
+    trigger('buttonPulse', [
+      transition('* => *', [
+        animate('300ms ease-in-out', style({ transform: 'scale(1.05)' })),
+        animate('300ms ease-in-out', style({ transform: 'scale(1)' })),
+      ]),
+    ]),
+  ],
 })
-export class CartPage {
+export class CartPage implements OnInit {
   cartSummary$ = this.cartService.cartSummary$;
   paymentSummary$ = this.cartService.paymentSummary$;
   action: 'cta' | 'phone-verification' | 'otp' | 'name' = 'cta';
@@ -73,12 +130,19 @@ export class CartPage {
     private toastController: ToastController,
     private storage: StorageService,
     private homePageService: HomePageService,
-    private checkOutService: CheckOutService
+    private checkOutService: CheckOutService,
+    private authService: AuthService,
+    private animationService: AnimationsService
   ) {
     this.cartService.cartSummary$.subscribe((cartSummary) => {
       console.log(cartSummary);
     });
   }
+
+  ngOnInit() {
+    // ... existing code ...
+  }
+
   decreaseQuantity(item: ItemDetail) {
     this.cartService.decreaseQuantity(item);
   }
@@ -117,7 +181,6 @@ export class CartPage {
     if (res.status === 201) {
       this.action = 'name';
       this.homePageService.isUserLoggedIn$.next(true);
-      //TODO: choose location if no location is set
     } else if (res.status === 200) {
       this.homePageService.isUserLoggedIn$.next(true);
       this.action = null;
@@ -137,79 +200,5 @@ export class CartPage {
         this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
       }
     }
-  }
-
-  async sendWhatsAppOTP(phoneNumber: string) {
-    // Implement your WhatsApp OTP sending logic here
-    console.log('Sending OTP to:', phoneNumber);
-    const phoneNumberFormatted = phone(phoneNumber, { country: 'EG' });
-    if (phoneNumberFormatted.isValid) {
-      this.phoneNumber$.next(phoneNumberFormatted.phoneNumber);
-      fetch(
-        `https://api-test.tappya.com/auth/otp?account=${
-          this.appService.restaurantName$.value
-        }&mobile=${encodeURIComponent(phoneNumberFormatted.phoneNumber)}`
-      )
-        .then((res) => res.text())
-        .then((data) => {
-          console.log(data);
-        });
-      this.action = 'otp';
-    } else {
-      this.toastController
-        .create({
-          message: 'Invalid phone number. Please try again.',
-          duration: 2000,
-          position: 'bottom',
-          color: 'danger',
-        })
-        .then((toast) => toast.present());
-    }
-  }
-  // this called every time when user changed the code
-  onCodeChanged(code: string) {
-    this.otp$.next(code);
-  }
-
-  // this called only if user entered full code
-  onCodeCompleted(code: string) {}
-
-  async verifyOTP(otp: string) {
-    // Implement your OTP verification logic here
-    fetch(
-      `https://api-test.tappya.com/auth/otp?account=${
-        this.appService.restaurantName$.value
-      }&mobile=${encodeURIComponent(this.phoneNumber$.value)}&code=${
-        this.otp$.value
-      }`,
-      {
-        method: 'POST',
-      }
-    )
-      .then((response) => {
-        if (response.status === 200) {
-          this.action = 'name';
-        } else {
-          this.toastController
-            .create({
-              message: 'Invalid OTP code. Please try again.',
-              duration: 2000,
-              position: 'bottom',
-              color: 'danger',
-            })
-            .then((toast) => toast.present());
-        }
-      })
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error('Error verifying OTP:', error);
-      });
-  }
-  continue() {
-    console.log('continue');
-
-    this.router.navigate(['/', this.restaurantName$.value, 'new-address']);
   }
 }

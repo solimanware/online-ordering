@@ -4,7 +4,7 @@
   scrollEvents="true"
   (ionScroll)="handleScroll($event)"
 >
-  <header class="bg-white shadow-none mt-4">
+  <header class="bg-white shadow-none mt-4" [@fadeIn]>
     <div class="header flex-col">
       <div class="flex justify-between items-center py-1">
         <div class="left">
@@ -38,19 +38,26 @@
 
       @if ((orderType$|async) === 'delivery' && (isUserLoggedIn$|async) ===
       true) {
-      <h1 class="text-black mt-2 flex items-center">
-        Delivery to <span class="font-bold ml-1">Apartment</span>
+      <h1
+        class="text-black mt-2 flex items-center cursor-pointer"
+        (click)="toggleAddressPopover()"
+      >
+        Delivery to
+        <span class="font-bold ml-1"
+          >{{ (userAddresses$.value[selectedAddressIndex]?.street ||
+          'Apartment') }}</span
+        >
         <ion-icon name="chevron-down-outline" class="ml-1"></ion-icon>
       </h1>
       }
     </div>
   </header>
-  <div class="hero">
+  <div class="hero" [@fadeIn]>
     <img src="assets/images/hero.png" alt="Hero Image" />
   </div>
 
   @if((nearestBranch$|async)) {
-  <div class="flex items-center pt-4">
+  <div class="flex items-center pt-4" [@fadeIn]>
     <img
       src="assets/images/logo.jpeg"
       alt="Restaurant Logo"
@@ -60,7 +67,10 @@
       {{(nearestBranch$|async)?.branchName}}
     </h1>
   </div>
-  <div class="resturant-details flex items-center justify-between text-sm">
+  <div
+    class="resturant-details flex items-center justify-between text-sm"
+    [@fadeIn]
+  >
     <div class="flex justify-center items-center ml-2">
       <p>{{nearestBranch$.value?.areaName}}</p>
       <button class="ml-4 bg-green-300 px-4 py-1 rounded-full text-green-900">
@@ -74,6 +84,7 @@
     [routerLink]="['/', (restaurantName$ | async), 'specify-location']"
     [queryParams]="{returnTo:returnTo}"
     class="choose-location flex items-start bg-blue-50 p-2 rounded-lg mt-2"
+    [@fadeIn]
   >
     <ion-icon class="text-blue-900 text-4xl" name="location-outline"></ion-icon>
     <div class="text-blue-900">
@@ -125,63 +136,68 @@
     >
       {{category.name.en}}
     </h1>
-    @for (item of category.items; track $index) { @if(isOutOfStock(item.id)) {
-    <div class="item flex mt-2 border-b-2 border-gray-200 pb-2">
-      <div class="ml-2 flex items-start relative">
-        <div
-          class="absolute inset-0 bg-gray-200/70 rounded flex items-center justify-center z-10"
-        >
-          <span class="text-gray-800 font-bold px-2 py-1 rounded"
-            >Out of Stock</span
+
+    <div class="category-items" [@staggerList]="category.items.length">
+      @for (item of category.items; track $index) { @if(isOutOfStock(item.id)) {
+      <div class="item flex mt-2 border-b-2 border-gray-200 pb-2" [@slideInUp]>
+        <div class="ml-2 flex items-start relative">
+          <div
+            class="absolute inset-0 bg-gray-200/70 rounded flex items-center justify-center z-10"
           >
-        </div>
-        <img
-          class="w-20 h-20 object-cover opacity-50"
-          src="{{item.imageUrl}}"
-          alt="Burger"
-        />
-        <div
-          class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none opacity-50"
-        >
-          <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
-          <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
-            {{item.description.en}}
-          </p>
-          @if (item.price.amount) {
-          <p class="text-lg font-bold mt-auto text-right">
-            {{item.price.amount}} {{item.price.currency}}
-          </p>
-          }
-        </div>
-      </div>
-    </div>
-    } @else {
-    <div
-      class="item flex mt-2 border-b-2 border-gray-200 pb-2"
-      (click)="selectItem(item)"
-    >
-      <div class="ml-2 flex items-start">
-        <img
-          class="w-20 h-20 object-cover"
-          src="{{item.imageUrl}}"
-          alt="Burger"
-        />
-        <div
-          class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none"
-        >
-          <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
-          <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
-            {{item.description.en}}
-          </p>
-          @if (item.price.amount) {
-          <p class="text-lg font-bold mt-auto text-right">
-            {{item.price.amount}} {{item.price.currency}}
-          </p>
-          }
+            <span class="text-gray-800 font-bold px-2 py-1 rounded"
+              >Out of Stock</span
+            >
+          </div>
+          <img
+            class="w-20 h-20 object-cover opacity-50"
+            src="{{item.imageUrl}}"
+            alt="Burger"
+          />
+          <div
+            class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none opacity-50"
+          >
+            <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
+            <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
+              {{item.description.en}}
+            </p>
+            @if (item.price.amount) {
+            <p class="text-lg font-bold mt-auto text-right">
+              {{item.price.amount}} {{item.price.currency}}
+            </p>
+            }
+          </div>
         </div>
       </div>
+      } @else {
+      <div
+        class="item flex mt-2 border-b-2 border-gray-200 pb-2"
+        (click)="selectItem(item)"
+        [@slideInUp]
+      >
+        <div class="ml-2 flex items-start">
+          <img
+            class="w-20 h-20 object-cover"
+            src="{{item.imageUrl}}"
+            alt="Burger"
+          />
+          <div
+            class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none"
+          >
+            <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
+            <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
+              {{item.description.en}}
+            </p>
+            @if (item.price.amount) {
+            <p class="text-lg font-bold mt-auto text-right">
+              {{item.price.amount}} {{item.price.currency}}
+            </p>
+            }
+          </div>
+        </div>
+      </div>
+      } }
     </div>
-    } } }
+    }
   </div>
   <div class="mb-24"></div>
   @if((shouldShowPickupActionSheet$|async)) {
@@ -218,6 +234,15 @@
       <app-otp (result)="handleOTPResult($event)" />
       }@case ('name') {
       <app-enter-name />
+      }@case ('address-popover') {
+      <app-address-popover
+        [addresses]="userAddresses$.value"
+        [selectedAddressIndex]="selectedAddressIndex"
+        [restaurantName]="restaurantName$.value"
+        [returnTo]="returnTo"
+        (addressSelected)="handleAddressSelected($event)"
+        (closePopover)="action = null"
+      />
       } }
     </div>
   </footer>

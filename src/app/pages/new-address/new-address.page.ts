@@ -83,7 +83,10 @@ export class NewAddressPage {
   isSubmitted = false;
   addressForm: FormGroup = new FormGroup({
     buildingName: new FormControl('', Validators.required),
-    streetName: new FormControl('', Validators.required),
+    streetName: new FormControl(
+      this.userService.userAddress$.value.ResultItems[0].Address.Label,
+      Validators.required
+    ),
     aptNo: new FormControl('', Validators.required),
     floor: new FormControl('', Validators.required),
     name: new FormControl(
@@ -117,6 +120,15 @@ export class NewAddressPage {
       businessOutline,
       libraryOutline,
     });
+  }
+
+  async ngOnInit() {
+    this.userService.userAddress$.subscribe((address) => {
+      console.log('address', address);
+      this.addressForm.patchValue({
+        street: address.ResultItems[0].Address.Label,
+      });
+    });
     this.userService.userPhoneNumber$.subscribe((phoneNumber) => {
       this.addressForm.patchValue({
         phoneNumber: phoneNumber,
@@ -126,36 +138,6 @@ export class NewAddressPage {
       this.addressForm.patchValue({
         name: name,
       });
-    });
-
-    console.log('user phone number', this.userService.userPhoneNumber$.value);
-  }
-
-  async ngOnInit() {
-    this.homePageService.userLocation$.subscribe(async (location) => {
-      const response = await fetch(
-        `https://places.geo.eu-west-1.amazonaws.com/v2/reverse-geocode?key=v1.public.eyJqdGkiOiI1OWZkZjQ4My1lZTI0LTRiNzUtYTUxOS1mY2M2NTVhZjNjY2EifdHxJgL-Gw-jZjzFQa1QwFY8Ag79JkmI4QB09vWqzMvgrr14KNPIMv-gSIdaWbROoDYN0-Q8m1-ow5oQ5E3L1kmFDwI0rLHooetc_Uu5OtSCEvXKkPO1688_5XGFIXuf_DgyqGzqF9UihjWEAFXC9BzRXdc_iMYDDy0FcAgjnN8hG50apca6Jc_Putfxu8vGHm6EuO9P2KvPwB-fLf5pCg3xq3P7Xq0qd1uIFpu9DCS-hBebCDfco249oHcK3KMJAQog1rmcUx1g3yR9ELlhulILqgTJnFmuKpkfgXGimaCqq6ShUaYPadz-TUyUOsYJkZeZE7qHK22v_OO5skweWMk.ZGQzZDY2OGQtMWQxMy00ZTEwLWIyZGUtOGVjYzUzMjU3OGE4`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json', // Add this header
-          },
-          body: JSON.stringify({
-            QueryPosition: location.reverse(),
-          }),
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          this.userService.userAddress$.next(data);
-          this.addressLabel = data.ResultItems[0].Address.Label;
-          this.addressForm.patchValue({
-            streetName: data.ResultItems[0].Address.Label,
-          });
-        })
-        .catch((error) => {
-          console.error('Error fetching address:', error);
-        });
     });
   }
 
@@ -174,57 +156,73 @@ export class NewAddressPage {
 
   saveAddress() {
     this.isSubmitted = true;
-    if (this.addressForm.valid) {
-      const address: Address = {
-        name: this.addressForm.value.name,
-        street: '',
-        street2: '',
-        city: 'Cairo',
-        state: '',
-        postalCode: '',
-        building: this.addressForm.value.buildingName,
-        floor: '',
-        flat: '',
-        landmark: '',
-        country: 'Egypt',
-        coordinates: {
-          latitude: 0,
-          longitude: 0,
-        },
-        type: 'residential',
-      };
-      const customer: Customer = {
-        name: this.addressForm.value.name,
-        email: this.addressForm.value.email,
-        mobile: this.addressForm.value.phoneNumber,
-        addresses: [address],
-        customerType: 'individual',
-        status: 'active',
-        notes: '',
-      };
-      console.log('Address form data:', this.addressForm);
-      fetch(
-        `https://api-test.tappya.com/customer/create-customer?account=${this.restaurantName$.value}`,
-        {
-          method: 'POST',
-          body: JSON.stringify(customer),
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          this.customerService.customerId$.next(data.data);
-          this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
-        })
-        .catch((error) => {
-          console.error('Error saving address:', error);
-        });
-    } else {
+
+    if (!this.addressForm.valid) {
       // Mark all fields as touched to trigger validation display
       Object.keys(this.addressForm.controls).forEach((key) => {
-        const control = this.addressForm.get(key);
-        control?.markAsTouched();
+        this.addressForm.get(key)?.markAsTouched();
       });
+      return;
     }
+
+    const formValues = this.addressForm.value;
+
+    // Create address object with all form values correctly populated
+    const address: Address = {
+      name: formValues.name,
+      street: formValues.streetName || '',
+      street2: '',
+      city: 'Cairo',
+      state: '',
+      postalCode: '',
+      building: formValues.buildingName,
+      floor: formValues.floor || '',
+      flat: formValues.aptNo || '',
+      landmark: formValues.additionalDirections || '',
+      country: 'Egypt',
+      coordinates: {
+        // Get coordinates from the map if available, otherwise default to 0,0
+        latitude: this.homePageService.userLocation$.value?.[0] || 0,
+        longitude: this.homePageService.userLocation$.value?.[1] || 0,
+      },
+      type: this.selectedSegment === 'apartment' ? 'residential' : 'business',
+    };
+
+    // Create customer object with all required information
+    const customer: Customer = {
+      name: formValues.name,
+      email: formValues.email || '', // Ensure email is never undefined
+      mobile: formValues.phoneNumber,
+      addresses: [address],
+      customerType: 'individual',
+      status: 'active',
+      notes: formValues.additionalDirections || '',
+    };
+
+    // Use the customer service to create the customer (single API call)
+    this.customerService
+      .createCustomer(this.restaurantName$.value, customer)
+      .subscribe({
+        next: (response) => {
+          // Store customer ID for future use
+          this.customerService.customerId$.next(response.data);
+
+          // Update user information if needed
+          if (formValues.name) {
+            this.userService.userName$.next(formValues.name);
+          }
+
+          if (formValues.phoneNumber) {
+            this.userService.userPhoneNumber$.next(formValues.phoneNumber);
+          }
+
+          // Navigate to checkout
+          this.router.navigate(['/', this.restaurantName$.value, 'check-out']);
+        },
+        error: (error) => {
+          console.error('Error creating customer:', error);
+          // Here you could add a toast notification for error feedback
+        },
+      });
   }
 }

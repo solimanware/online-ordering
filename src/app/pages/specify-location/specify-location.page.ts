@@ -29,6 +29,8 @@ import {
 import { Branch } from 'src/app/interfaces/metaData';
 import { AppService } from 'src/app/services/app.service';
 import { HomePageService } from 'src/app/services/home-page.service';
+import { UserService } from 'src/app/services/user.service';
+import { LocationService } from '../../services/location.service';
 const awsRegion = 'eu-west-1';
 const mapStyle = 'Standard';
 const apiKey =
@@ -78,7 +80,9 @@ export class SpecifyLocationPage {
   constructor(
     private homePageService: HomePageService,
     private router: Router,
-    private appService: AppService
+    private appService: AppService,
+    private locationService: LocationService,
+    private userService: UserService
   ) {
     addIcons({ arrowBackOutline, searchOutline, locationOutline, location });
     this.router.events.subscribe((event) => {
@@ -163,6 +167,14 @@ export class SpecifyLocationPage {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           });
+          this.locationService
+            .reverseGeocode([
+              position.coords.latitude,
+              position.coords.longitude,
+            ])
+            .subscribe((res) => {
+              this.userService.userAddress$.next(res);
+            });
           observer.complete();
         });
       } else {
@@ -186,7 +198,6 @@ export class SpecifyLocationPage {
 
   async searchAddress(event: any) {
     const searchText = event.target.value;
-    this.searchText = searchText;
 
     if (searchText.length < 3) {
       this.searchResults = [];
@@ -194,24 +205,16 @@ export class SpecifyLocationPage {
     }
 
     try {
-      const response = await fetch(
-        `https://places.geo.eu-west-1.amazonaws.com/v2/autocomplete?key=v1.public.eyJqdGkiOiI1OWZkZjQ4My1lZTI0LTRiNzUtYTUxOS1mY2M2NTVhZjNjY2EifdHxJgL-Gw-jZjzFQa1QwFY8Ag79JkmI4QB09vWqzMvgrr14KNPIMv-gSIdaWbROoDYN0-Q8m1-ow5oQ5E3L1kmFDwI0rLHooetc_Uu5OtSCEvXKkPO1688_5XGFIXuf_DgyqGzqF9UihjWEAFXC9BzRXdc_iMYDDy0FcAgjnN8hG50apca6Jc_Putfxu8vGHm6EuO9P2KvPwB-fLf5pCg3xq3P7Xq0qd1uIFpu9DCS-hBebCDfco249oHcK3KMJAQog1rmcUx1g3yR9ELlhulILqgTJnFmuKpkfgXGimaCqq6ShUaYPadz-TUyUOsYJkZeZE7qHK22v_OO5skweWMk.ZGQzZDY2OGQtMWQxMy00ZTEwLWIyZGUtOGVjYzUzMjU3OGE4`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            QueryText: searchText,
-          }),
+      this.locationService.searchPlaces(searchText).subscribe(
+        (data) => {
+          console.log('data', data);
+          this.searchResults = data.ResultItems || [];
+        },
+        (error) => {
+          console.error('Error searching addresses:', error);
+          this.searchResults = [];
         }
       );
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      console.log('data', data);
-
-      this.searchResults = data.ResultItems || [];
     } catch (error) {
       console.error('Error searching addresses:', error);
       this.searchResults = [];
@@ -219,16 +222,18 @@ export class SpecifyLocationPage {
   }
 
   getPlaceOfPlaceId(placeId: string): Promise<[number, number]> {
-    return fetch(
-      `https://places.geo.eu-west-1.amazonaws.com/v2/place/${placeId}?key=${apiKey}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-
-        const coordinates = data.Position;
-        return [coordinates[0], coordinates[1]]; // Return [latitude, longitude]
-      });
+    return new Promise((resolve, reject) => {
+      this.locationService.getPlaceDetails(placeId).subscribe(
+        (coordinates) => {
+          console.log('coordinates', coordinates);
+          resolve(coordinates);
+        },
+        (error) => {
+          console.error('Error getting place details:', error);
+          reject(error);
+        }
+      );
+    });
   }
 
   async selectAddress(result: any) {
