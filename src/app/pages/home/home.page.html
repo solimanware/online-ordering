@@ -11,7 +11,8 @@
           <ion-segment
             value="delivery"
             (ionChange)="onOrderTypeChange($event)"
-            class="bg-white"
+            class="order-type-segment bg-white"
+            #orderTypeSegment
           >
             <ion-segment-button value="delivery" class="delivery-segment">
               <ion-label>Delivery</ion-label>
@@ -112,6 +113,7 @@
         (ngModelChange)="activeCategory$.next($event)"
         scrollable
         class="pt-4 scrollbar-hide"
+        #categorySegment
       >
         @for (category of (categories$|async); track $index) {
         <ion-segment-button
@@ -129,7 +131,8 @@
   </div>
 
   <div class="items" (click)="itemChoosen()">
-    @for (category of (categories$|async); track $index) {
+    @for (category of (categories$|async); track $index) { @if(category &&
+    category.name && category.name.en) {
     <h1
       [id]="'category-' + category.name.en"
       class="text-xl text-black my-4 px-2 0 w-fit"
@@ -137,8 +140,9 @@
       {{category.name.en}}
     </h1>
 
-    <div class="category-items" [@staggerList]="category.items.length">
-      @for (item of category.items; track $index) { @if(isOutOfStock(item.id)) {
+    <div class="category-items" [@staggerList]="category?.items?.length || 0">
+      @for (item of category.items || []; track $index) { @if(item &&
+      isOutOfStock(item.id)) {
       <div class="item flex mt-2 border-b-2 border-gray-200 pb-2" [@slideInUp]>
         <div class="ml-2 flex items-start relative">
           <div
@@ -150,25 +154,25 @@
           </div>
           <img
             class="w-20 h-20 object-cover opacity-50"
-            src="{{item.imageUrl}}"
+            src="{{item?.imageUrl}}"
             alt="Burger"
           />
           <div
             class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none opacity-50"
           >
-            <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
+            <h2 class="text-lg font-bold m-0 p-0">{{item?.name?.en}}</h2>
             <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
-              {{item.description.en}}
+              {{item?.description?.en}}
             </p>
-            @if (item.price.amount) {
+            @if (item?.price?.amount) {
             <p class="text-lg font-bold mt-auto text-right">
-              {{item.price.amount}} {{item.price.currency}}
+              {{item?.price?.amount}} {{item?.price?.currency}}
             </p>
             }
           </div>
         </div>
       </div>
-      } @else {
+      } @else if (item) {
       <div
         class="item flex mt-2 border-b-2 border-gray-200 pb-2"
         (click)="selectItem(item)"
@@ -177,19 +181,19 @@
         <div class="ml-2 flex items-start">
           <img
             class="w-20 h-20 object-cover"
-            src="{{item.imageUrl}}"
+            src="{{item?.imageUrl}}"
             alt="Burger"
           />
           <div
             class="flex flex-col items-start justify-start ml-2 w-full overflow-hidden leading-none"
           >
-            <h2 class="text-lg font-bold m-0 p-0">{{item.name.en}}</h2>
+            <h2 class="text-lg font-bold m-0 p-0">{{item?.name?.en}}</h2>
             <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">
-              {{item.description.en}}
+              {{item?.description?.en}}
             </p>
-            @if (item.price.amount) {
+            @if (item?.price?.amount) {
             <p class="text-lg font-bold mt-auto text-right">
-              {{item.price.amount}} {{item.price.currency}}
+              {{item?.price?.amount}} {{item?.price?.currency}}
             </p>
             }
           </div>
@@ -197,7 +201,7 @@
       </div>
       } }
     </div>
-    }
+    } }
   </div>
   <div class="mb-24"></div>
   @if((shouldShowPickupActionSheet$|async)) {

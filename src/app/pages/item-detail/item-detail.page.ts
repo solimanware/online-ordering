@@ -107,6 +107,12 @@ export interface ItemDetail extends Item {
         animate('500ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
       ]),
     ]),
+    trigger('pulse', [
+      transition('* => *', [
+        animate('300ms ease-in-out', style({ transform: 'scale(1.05)' })),
+        animate('300ms ease-in-out', style({ transform: 'scale(1)' })),
+      ]),
+    ]),
   ],
 })
 export class ItemDetailPage implements OnInit {

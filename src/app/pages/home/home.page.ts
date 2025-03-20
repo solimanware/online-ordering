@@ -125,7 +125,7 @@ import { LoggerService } from '../../services/logger.service';
 })
 export class HomePage implements OnInit {
   @ViewChild(IonContent) content!: IonContent;
-  @ViewChild(IonSegment) segment!: IonSegment;
+  @ViewChild('categorySegment', { static: false }) categorySegment!: IonSegment;
   isFixedContentSticky: boolean = false;
   didScroll: boolean = false;
   userType: UserType = 'newUserDelivery';
@@ -191,13 +191,20 @@ export class HomePage implements OnInit {
   }
 
   ngOnInit() {
+    // Make sure categories have a default empty array to prevent errors
+    if (!this.categories$.getValue()) {
+      this.categories$.next([]);
+    }
+
     this.orderType$.subscribe((orderType) => {
       console.log('order type', orderType);
       this.orderType = orderType;
     });
+
     console.log('I am here');
+
     this.metaData$.subscribe((metaData) => {
-      if (metaData && metaData.branches.length > 0) {
+      if (metaData && metaData.branches && metaData.branches.length > 0) {
         this.inventoryService
           .getOutOfStockItems(
             metaData.branches[0].branchId.toString(),
@@ -214,6 +221,7 @@ export class HomePage implements OnInit {
           );
       }
     });
+
     //See if user is logged in
     this.storage.get('user').then((user) => {
       if (user) {
@@ -237,7 +245,9 @@ export class HomePage implements OnInit {
   }
 
   isOutOfStock(itemId: string): boolean {
-    if (this.outOfStockItems$.value.length > 0) {
+    if (!itemId) return false;
+
+    if (this.outOfStockItems$.value && this.outOfStockItems$.value.length > 0) {
       return this.outOfStockItems$?.value?.includes(itemId) || false;
     }
     return false;
@@ -383,7 +393,7 @@ export class HomePage implements OnInit {
         if (rect.top <= 150) {
           // Adjust this value based on your layout
           this.activeCategory$.next(categories[i].name.en);
-          this.segment.value = this.activeCategory$.value;
+          this.categorySegment.value = this.activeCategory$.value;
           break;
         }
       }
@@ -391,8 +401,12 @@ export class HomePage implements OnInit {
   }
 
   scrollToCategory(categoryName: string) {
+    if (!categoryName) return;
+
     const element = document.getElementById(`category-${categoryName}`);
-    this.content.scrollToPoint(0, element.offsetTop - 128, 500);
+    if (element) {
+      this.content.scrollToPoint(0, element.offsetTop - 128, 500);
+    }
   }
 
   onOrderTypeChange(event: any) {
