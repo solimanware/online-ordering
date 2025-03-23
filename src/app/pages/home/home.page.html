@@ -237,7 +237,7 @@
       }@case ('otp') {
       <app-otp (result)="handleOTPResult($event)" />
       }@case ('name') {
-      <app-enter-name />
+      <app-enter-name (nameChange)="handleNameChange($event)" />
       }@case ('address-popover') {
       <app-address-popover
         [addresses]="userAddresses$.value"

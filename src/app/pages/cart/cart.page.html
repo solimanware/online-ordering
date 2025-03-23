@@ -124,7 +124,7 @@
   <app-otp (result)="handleOTPResult($event)" />
 
   }@case ('name') {
-  <app-enter-name />
+  <app-enter-name (nameChange)="handleNameChange($event)" />
   }@default {
   <div
     class="cta flex justify-center p-4 bg-white shadow-[0_-4px_12px_rgba(0,0,0,0.08)]"

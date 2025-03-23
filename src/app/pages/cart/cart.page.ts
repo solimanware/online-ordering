@@ -143,6 +143,16 @@ export class CartPage implements OnInit {
     // ... existing code ...
   }
 
+  async handleNameChange(name: string) {
+    this.userService.userName$.next(name);
+    const user = await this.storage.get('user');
+    await this.storage.set('user', {
+      ...user,
+      name,
+    });
+    this.checkout();
+  }
+
   decreaseQuantity(item: ItemDetail) {
     this.cartService.decreaseQuantity(item);
   }

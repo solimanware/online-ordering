@@ -238,6 +238,17 @@ export class HomePage implements OnInit {
     });
   }
 
+  async handleNameChange(name: string) {
+    this.userService.userName$.next(name);
+    const user = await this.storage.get('user');
+    await this.storage.set('user', {
+      ...user,
+      name,
+    });
+    this.isUserLoggedIn$.next(true);
+    this.action = null;
+  }
+
   handleOTP(otp: number) {
     console.log(otp);
     this.otp$.next(otp.toString());
