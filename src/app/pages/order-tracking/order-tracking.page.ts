@@ -200,6 +200,10 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
     clearInterval(this.pollInterval);
   };
 
+  ionViewWillLeave() {
+    clearInterval(this.pollInterval);
+  }
+
   options = {
     path: `/assets/animations/${this.orderSteps[0].animation}.json`, // Update this path to your animation file
     loop: true,
