@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { BehaviorSubject } from 'rxjs';
 import { ItemDetail } from '../pages/item-detail/item-detail.page';
+import { HomePageService } from './home-page.service';
 import { LoggerService } from './logger.service';
 
 export interface CartSummary {
@@ -43,7 +44,8 @@ export class CartService {
 
   constructor(
     private toastController: ToastController,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private homePageService: HomePageService
   ) {
     this.logger.info('CartService', 'Service initialized');
     // Update the payment summary whenever the cart summary changes.
@@ -244,9 +246,15 @@ export class CartService {
       // This example sums up the quantities for a total count.
       itemsCount: cartItems.reduce((acc, item) => acc + item.quantity, 0),
       subtotal: cartItems.reduce((acc, item) => acc + item.totalPrice, 0),
-      serviceFee: cartItems.reduce((acc, item) => acc + item.serviceFee, 0),
-      tax: cartItems.reduce((acc, item) => acc + item.tax, 0),
-      total: cartItems.reduce((acc, item) => acc + item.total, 0),
+      serviceFee:
+        this.homePageService.nearestBranch$.value.price ||
+        this.homePageService.nearestBranch$.value.deliveryFees,
+      tax: Number(
+        cartItems.reduce((acc, item) => acc + item.tax, 0).toFixed(2)
+      ),
+      get total() {
+        return this.subtotal + this.tax + this.serviceFee;
+      },
       // Safely use the currency from the first item if available.
       currency: cartItems[0].currency,
     };
