@@ -8,6 +8,7 @@ import { arrowBackOutline, checkmarkOutline } from 'ionicons/icons';
 import { AnimationItem } from 'lottie-web';
 import { LottieComponent } from 'ngx-lottie';
 import { AppService } from 'src/app/services/app.service';
+import { CartService } from 'src/app/services/cart.service';
 import { HomePageService } from 'src/app/services/home-page.service';
 import { OrderService } from '../../services/order.service';
 
@@ -147,7 +148,8 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
     private homePageService: HomePageService,
     private appService: AppService,
     private router: Router,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private cartService: CartService
   ) {
     addIcons({ arrowBackOutline, checkmarkOutline });
   }
@@ -160,6 +162,16 @@ export class OrderTrackingPage implements OnInit, OnDestroy {
     const accountId = parts[1];
     const branchId = this.homePageService.metaData$.value.branches[0].branchId;
     const posId = this.homePageService.metaData$.value.branches[0].posId;
+
+    this.cartService.cartSummary$.next([]);
+    this.cartService.paymentSummary$.next({
+      itemsCount: 0,
+      subtotal: 0,
+      serviceFee: 0,
+      tax: 0,
+      total: 0,
+      currency: 'EGP',
+    });
 
     // Get order type (delivery or pickup) from service or route params
     this.isPickupFlow$.subscribe((isPickupFlow) => {
